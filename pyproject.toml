@@ -8,7 +8,7 @@ version = "0.1.0"
 authors = [
     {name = "Sebastian Quiles", email = "qsebas@gmail.com"},
 ]
-description = "A set of helpers and Mixin classes to extend Pydantic libraru."
+description = "A set of helpers and Mixin classes to extend Pydantic library."
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
