@@ -20,6 +20,7 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -172,3 +173,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# pycharm
+.idea/
+
+#sqllite
+sqlite3.db

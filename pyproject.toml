@@ -1,0 +1,50 @@
+[build-system]
+requires = ["wheel", "setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "karpyncho-pydantic-extensions"
+version = "0.1.0"
+authors = [
+    {name = "Sebastian Quiles", email = "qsebas@gmail.com"},
+]
+description = "A set of helpers and Mixin classes to extend Pydantic libraru."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dynamic = ["dependencies"]
+
+[project.urls]
+homepage = "https://github.com/karpyncho/pydantic-extensions"
+# documentation = "https://readthedocs.org"
+repository = "https://github.com/karpyncho/pydantic-extensions"
+changelog = "https://github.com/karpyncho/pydantic-extensions/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+    "tox",
+    "build",
+    "flake8",
+    "flake8-import-order",
+    "pep8-naming",
+    "flake8-colors",
+    "pylint",
+    "bandit",
+    "pytest",
+    "coverage",
+    "pytest-cov",
+]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
