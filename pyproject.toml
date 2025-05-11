@@ -8,7 +8,7 @@ version = "0.1.0"
 authors = [
     {name = "Sebastian Quiles", email = "qsebas@gmail.com"},
 ]
-description = "A set of helpers and Mixin classes to extend Pydantic library."
+description = "A collection of extensions and enhancements for the Pydantic library, providing custom mixins and utilities to enhance your data validation and serialization capabilities."
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -32,19 +32,7 @@ repository = "https://github.com/karpyncho/pydantic-extensions"
 changelog = "https://github.com/karpyncho/pydantic-extensions/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-dev = [
-    "tox",
-    "build",
-    "flake8",
-    "flake8-import-order",
-    "pep8-naming",
-    "flake8-colors",
-    "pylint",
-    "bandit",
-    "pytest",
-    "coverage",
-    "pytest-cov",
-]
+dev = {file = ["requirements-dev.txt"]}
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

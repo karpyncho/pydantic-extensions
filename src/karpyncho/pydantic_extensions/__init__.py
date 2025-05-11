@@ -24,7 +24,12 @@ from pydantic import ConfigDict, field_validator
 
 
 class DateSerializerMixin:
-    """Generic mixin for handling dates with custom format in Pydantic models."""
+    """
+    Generic mixin for handling dates with custom format in Pydantic models.
+    it will accept optionals 0s in day and month both (2023-01-05) and (2023-1-5) are
+    valid dates
+
+    """
 
     # Class variables
     __date_fields__: ClassVar[set] = set()
@@ -69,7 +74,11 @@ class DateSerializerMixin:
 
 
 class DateDMYSerializerMixin(DateSerializerMixin):
-    """Specific mixin for handling dates in DD/MM/YYYY format in Pydantic models."""
+    """
+    Specific mixin for handling dates in DD/MM/YYYY format in Pydantic models.
+    it will accept optionals 0s in day and month both (05/01/2023) and (5/1/2023) are
+    valid dates
+    """
 
     # Only override the date format
     __date_format__: ClassVar[str] = "%d/%m/%Y"

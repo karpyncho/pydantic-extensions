@@ -21,35 +21,69 @@ class MyDataDMYClass(DateDMYSerializerMixin, BaseModel):
 class DateSerializerMixinTest(TestCase):
 
     def test_date_serializer_mixin_serialize(self):
-        data = MyDataClass(str_field="Hola", date_field=date(2023, 1, 13))
-        self.assertEqual(data.model_dump(), {"str_field": "Hola", "date_field": "2023-01-13"})
+        data = MyDataClass(str_field="Hola", date_field=date(2023, 1, 3))
+        self.assertEqual(data.model_dump(), {"str_field": "Hola", "date_field": "2023-01-03"})
 
     def test_date_serializer_mixin_deserialize(self):
         json_raw = '{"str_field": "hola", "date_field": "2019-05-23"}'
         my_dict = json.loads(json_raw)
         obj = MyDataClass(**my_dict)
-
         self.assertEqual(obj.date_field, date(2019, 5, 23))
 
     def test_date_serializer_mixin_deserialize_value_error(self):
         json_raw = '{"str_field": "hola", "date_field": "THIS IS NOT A DATE"}'
         my_dict = json.loads(json_raw)
-
         with self.assertRaises(ValueError):
             MyDataClass(**my_dict)
+
+    def test_date_dmy_serializer_mixin_deserialize_one_digit_month(self):
+        json_raw = '{"str_field": "hola", "date_field": "2019-5-3"}'
+        my_dict = json.loads(json_raw)
+        obj = MyDataClass(**my_dict)
+        self.assertEqual(obj.date_field, date(2019, 5, 3))
+
+    def test_date_dmy_serializer_mixin_deserialize_0_digit_day(self):
+        json_raw = '{"str_field": "hola", "date_field": "2019-5-03"}'
+        my_dict = json.loads(json_raw)
+        obj = MyDataClass(**my_dict)
+        self.assertEqual(obj.date_field, date(2019, 5, 3))
+
+    def test_date_dmy_serializer_mixin_deserialize_two_digit_year(self):
+        json_raw = '{"str_field": "hola", "date_field": "19-05-03"}'
+        my_dict = json.loads(json_raw)
+        with self.assertRaises(ValueError):
+            MyDataClass(**my_dict)
+
 
 class DateDMYSerializerMixinTest(TestCase):
 
     def test_date_dmy_serializer_mixin_serialize(self):
-        data = MyDataDMYClass(str_field="Hola", date_field=date(2023, 1, 13))
-        self.assertEqual(data.model_dump(), {"str_field": "Hola", "date_field": "13/01/2023"})
+        data = MyDataDMYClass(str_field="Hola", date_field=date(2023, 1, 3))
+        self.assertEqual(data.model_dump(), {"str_field": "Hola", "date_field": "03/01/2023"})
 
     def test_date_dmy_serializer_mixin_deserialize(self):
         json_raw = '{"str_field": "hola", "date_field": "23/05/2019"}'
         my_dict = json.loads(json_raw)
         obj = MyDataDMYClass(**my_dict)
-
         self.assertEqual(obj.date_field, date(2019, 5, 23))
+
+    def test_date_dmy_serializer_mixin_deserialize_one_digit_month(self):
+        json_raw = '{"str_field": "hola", "date_field": "3/5/2019"}'
+        my_dict = json.loads(json_raw)
+        obj = MyDataDMYClass(**my_dict)
+        self.assertEqual(obj.date_field, date(2019, 5, 3))
+
+    def test_date_dmy_serializer_mixin_deserialize_0_padded_day(self):
+        json_raw = '{"str_field": "hola", "date_field": "03/5/2019"}'
+        my_dict = json.loads(json_raw)
+        obj = MyDataDMYClass(**my_dict)
+        self.assertEqual(obj.date_field, date(2019, 5, 3))
+
+    def test_date_dmy_serializer_mixin_deserialize_two_digit_year(self):
+        json_raw = '{"str_field": "hola", "date_field": "03/5/19"}'
+        my_dict = json.loads(json_raw)
+        with self.assertRaises(ValueError):
+            MyDataDMYClass(**my_dict)
 
     def test_date_dmy_serializer_mixin_deserialize_value_error(self):
         json_raw = '{"str_field": "hola", "date_field": "THIS IS NOT A DATE"}'

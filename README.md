@@ -40,12 +40,19 @@ class Person(DateSerializerMixin, BaseModel):
     birth_date: date
     
 # The date will be formatted as YYYY-MM-DD (default format)
-person = Person(name="John Doe", birth_date="2000-01-01")
-print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '2000-01-01'}
+person = Person(name="John Doe", birth_date="2000-01-21")
+print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '2000-01-21'}
 
 # You can also use date objects directly
-person = Person(name="John Doe", birth_date=date(2000, 1, 1))
-print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '2000-01-01'}
+person = Person(name="John Doe", birth_date=date(2000, 1, 21))
+print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '2000-01-21'}
+
+# You can also deserialize a JSON string
+json_str = '{"name": "John Doe", "birth_date": "2000-01-21"}'
+person_dict = Person.loads(json_str)
+person = Person(**person_dict)  
+print(person)  # {'name': 'John Doe', 'birth_date': '2000-01-21'}
+
 ```
 
 ### Using DateDMYSerializerMixin for DD/MM/YYYY Format
@@ -62,12 +69,18 @@ class Person(DateDMYSerializerMixin, BaseModel):
     birth_date: date
     
 # The date will be formatted as DD/MM/YYYY
-person = Person(name="John Doe", birth_date="01/01/2000")
-print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '01/01/2000'}
+person = Person(name="John Doe", birth_date="21/01/2000")
+print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '21/01/2000'}
 
 # You can also provide dates in different formats during initialization
-person = Person(name="John Doe", birth_date=date(2000, 1, 1))
-print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '01/01/2000'}
+person = Person(name="John Doe", birth_date=date(2000, 1, 21))
+print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '21/01/2000'}
+
+# You can also deserialize a JSON string
+json_str = '{"name": "John Doe", "birth_date": "21/01/2000"}'
+person_dict = Person.loads(json_str)
+person = Person(**person_dict)  
+print(person)  # {'name': 'John Doe', 'birth_date': '21/01/2000'}
 ```
 
 ### Creating Custom Date Format Mixins
