@@ -3,15 +3,13 @@
 Extensions for Pydantic library
 
 [![PyPI version](https://badge.fury.io/py/karpyncho-pydantic-extensions.svg)](https://badge.fury.io/py/karpyncho-pydantic-extensions)
-[![PyPI version](https://img.shields.io/pypi/v/pydantic-extensions.svg)](https://pypi.org/project/pydantic-extensions/)
+[![PyPI version](https://img.shields.io/pypi/v/pydantic-extensions.svg)](https://pypi.org/project/karpyncho-pydantic-extensions/)
 
-[![PyPI Supported Python Versions](https://img.shields.io/pypi/pyversions/karpyncho-pydantic-extensions.svg)](https://pypi.python.org/pypi/karpyncho-pydantic-extensions/)
-[![Python versions](https://img.shields.io/pypi/pyversions/pydantic-extensions.svg)](https://pypi.org/project/pydantic-extensions/)
+[![Python versions](https://img.shields.io/pypi/pyversions/pydantic-extensions.svg)](https://pypi.org/project/karpyncho-pydantic-extensions/)
 
-[![check](https://github.com/tox-dev/tox-gh/actions/workflows/check.yml/badge.svg)](https://github.com/tox-dev/tox-gh/actions/workflows/check.yml)
+[![check](https://github.com/karpyncho/pydantic-extensions/actions/workflows/check.yml/badge.svg)](https://github.com/karpyncho/pydantic-extensions/actions/workflows/check.yml)
 [![codecov](https://codecov.io/gh/karpyncho/pydantic_extensions/graph/badge.svg?token=swpOXcNXkz)](https://codecov.io/gh/karpyncho/pydantic-extensions)
-[![License](https://img.shields.io/github/license/karpyncho/pydantic-extensions.svg)](https://github.com/karpyncho/pydantic-extensions/blob/main/LICENSE)
-
+![GitHub License](https://img.shields.io/github/license/karpyncho/pydantic-extensions)
 ## Goal
 
 
