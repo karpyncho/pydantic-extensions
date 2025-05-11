@@ -9,7 +9,7 @@ Extensions for Pydantic library
 [![Python versions](https://img.shields.io/pypi/pyversions/pydantic-extensions.svg)](https://pypi.org/project/pydantic-extensions/)
 
 [![check](https://github.com/tox-dev/tox-gh/actions/workflows/check.yml/badge.svg)](https://github.com/tox-dev/tox-gh/actions/workflows/check.yml)
-[![codecov](https://codecov.io/gh/karpyncho/pydantic-extensions/branch/main/graph/badge.svg?token=M4IT5AXE88)](https://codecov.io/gh/karpyncho/pydantic-extensions)
+[![codecov](https://codecov.io/gh/karpyncho/pydantic_extensions/graph/badge.svg?token=swpOXcNXkz)](https://codecov.io/gh/karpyncho/pydantic-extensions)
 [![License](https://img.shields.io/github/license/karpyncho/pydantic-extensions.svg)](https://github.com/karpyncho/pydantic-extensions/blob/main/LICENSE)
 
 ## Goal
