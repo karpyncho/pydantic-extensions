@@ -9,7 +9,7 @@ Extensions for Pydantic library
 
 [![check](https://github.com/karpyncho/pydantic-extensions/actions/workflows/check.yml/badge.svg)](https://github.com/karpyncho/pydantic-extensions/actions/workflows/check.yml)
 [![codecov](https://codecov.io/gh/karpyncho/pydantic_extensions/graph/badge.svg?token=swpOXcNXkz)](https://codecov.io/gh/karpyncho/pydantic-extensions)
-![GitHub License](https://img.shields.io/github/license/karpyncho/pydantic-extensions)
+[![GitHub License](https://img.shields.io/github/license/karpyncho/pydantic-extensions)](https://github.com/karpyncho/pydantic-extensions/blob/main/LICENSE)
 ## Goal
 
 
