@@ -1,7 +1,5 @@
 # Karpyncho Pydantic Extensions
 
-Extensions for Pydantic library
-
 [![PyPI version](https://badge.fury.io/py/karpyncho-pydantic-extensions.svg)](https://badge.fury.io/py/karpyncho-pydantic-extensions)
 [![PyPI version](https://img.shields.io/pypi/v/pydantic-extensions.svg)](https://pypi.org/project/karpyncho-pydantic-extensions/)
 
@@ -11,9 +9,6 @@ Extensions for Pydantic library
 [![codecov](https://codecov.io/gh/karpyncho/pydantic-extensions/graph/badge.svg?token=swpOXcNXkz)](https://codecov.io/gh/karpyncho/pydantic-extensions)
 [![GitHub License](https://img.shields.io/github/license/karpyncho/pydantic-extensions)](https://github.com/karpyncho/pydantic-extensions/blob/main/LICENSE)
 ## Goal
-
-
-
 
 A collection of extensions and enhancements for the Pydantic library, providing custom mixins and utilities to enhance your data validation and serialization capabilities.
 

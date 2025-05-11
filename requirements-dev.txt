@@ -1,2 +1,12 @@
 pytest==8.3.5
 tox==4.13.0
+build
+flake8
+flake8-import-order
+pep8-naming
+flake8-colors
+pylint
+bandit
+pytest
+coverage
+pytest-cov
