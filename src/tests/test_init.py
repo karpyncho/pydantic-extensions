@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from pydantic import BaseModel
 
-from karpyncho.pydantic_extensions import DateSerializerMixin, DateDMYSerializerMixin, DateNumberSerializerMixin
+from karpyncho.pydantic_extensions import (DateSerializerMixin, DateDMYSerializerMixin, DateNumberSerializerMixin)
 
 
 

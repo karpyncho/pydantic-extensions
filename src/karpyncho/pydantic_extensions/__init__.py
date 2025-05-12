@@ -85,6 +85,16 @@ class DateDMYSerializerMixin(DateSerializerMixin):
 
 
 class DateNumberSerializerMixin(DateSerializerMixin):
+    """
+    Mixin for handling date serialization in 'YYYYMMDD' format in Pydantic models.
+
+    This mixin extends the DateSerializerMixin to validate and convert dates
+    represented as integers in the 'YYYYMMDD' format to date objects.
+    examples of valid fields are '20230512' and '20230508'.
+
+    Fields:
+        __date_format__: ClassVar[str] = '%Y%m%d'
+    """
 
     # Only override the date format
     __date_format__: ClassVar[str] = "%Y%m%d"
