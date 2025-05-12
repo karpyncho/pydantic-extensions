@@ -82,3 +82,28 @@ class DateDMYSerializerMixin(DateSerializerMixin):
 
     # Only override the date format
     __date_format__: ClassVar[str] = "%d/%m/%Y"
+
+
+class DateNumberSerializerMixin(DateSerializerMixin):
+
+    # Only override the date format
+    __date_format__: ClassVar[str] = "%Y%m%d"
+
+    @field_validator('*', mode='before')
+    @classmethod
+    def validate_date_format(cls, v: Any, info):
+        """Convert string dates in the specified format to date objects."""
+        if info.field_name in cls.__date_fields__ and isinstance(v, int):
+            try:
+                return datetime.strptime(str(v), cls.__date_format__).date()
+            except ValueError as e:
+                raise ValueError(f'Date must be in {cls.__date_format__} format: {e}') from e
+        return v
+
+    def model_dump(self, **kwargs):
+        """Override model_dump to format dates according to __date_format__."""
+        data = super().model_dump(**kwargs)  # this line is converting all dates fields to str
+        for field_name in self.__date_fields__:
+            if field_name in data and isinstance(data[field_name], str):
+                data[field_name] = int(getattr(self, field_name).strftime(self.__date_format__))
+        return data

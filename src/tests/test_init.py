@@ -5,7 +5,8 @@ from unittest import TestCase
 
 from pydantic import BaseModel
 
-from karpyncho.pydantic_extensions import DateSerializerMixin, DateDMYSerializerMixin
+from karpyncho.pydantic_extensions import DateSerializerMixin, DateDMYSerializerMixin, DateNumberSerializerMixin
+
 
 
 class MyDataClass(DateSerializerMixin, BaseModel):
@@ -17,6 +18,10 @@ class MyDataDMYClass(DateDMYSerializerMixin, BaseModel):
     str_field: str
     date_field: date
 
+
+class MyDataNumberClass(DateNumberSerializerMixin, BaseModel):
+    str_field: str
+    date_field: date
 
 class DateSerializerMixinTest(TestCase):
 
@@ -91,3 +96,35 @@ class DateDMYSerializerMixinTest(TestCase):
 
         with self.assertRaises(ValueError):
             MyDataDMYClass(**my_dict)
+
+
+class DateNumberSerializerMixinTest(TestCase):
+
+    def test_date_number_serializer_mixin_serialize(self):
+        data = MyDataNumberClass(str_field="Hola", date_field=date(2023, 1, 3))
+        self.assertEqual(data.model_dump(), {"str_field": "Hola", "date_field": 20230103})
+
+    def test_date_number_serializer_mixin_deserialize(self):
+        json_raw = '{"str_field": "hola", "date_field": 20190523}'
+        my_dict = json.loads(json_raw)
+        obj = MyDataNumberClass(**my_dict)
+        self.assertEqual(obj.date_field, date(2019, 5, 23))
+
+    def test_date_number_serializer_mixin_deserialize_one_digit_month(self):
+        json_raw = '{"str_field": "hola", "date_field": 20190503}'
+        my_dict = json.loads(json_raw)
+        obj = MyDataNumberClass(**my_dict)
+        self.assertEqual(obj.date_field, date(2019, 5, 3))
+
+    def test_date_number_serializer_mixin_deserialize_two_digit_year(self):
+        json_raw = '{"str_field": "hola", "date_field": 1905003}'
+        my_dict = json.loads(json_raw)
+        with self.assertRaises(ValueError):
+            MyDataNumberClass(**my_dict)
+
+    def test_date_number_serializer_mixin_deserialize_value_error(self):
+        json_raw = '{"str_field": "hola", "date_field": "THIS IS NOT A DATE"}'
+        my_dict = json.loads(json_raw)
+
+        with self.assertRaises(ValueError):
+            MyDataNumberClass(**my_dict)

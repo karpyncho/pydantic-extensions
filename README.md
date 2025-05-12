@@ -17,6 +17,7 @@ A collection of extensions and enhancements for the Pydantic library, providing 
 - **Date Serialization**: Custom mixins for consistent date handling with configurable formats
   - `DateSerializerMixin`: Generic mixin for customizable date formats
   - `DateDMYSerializerMixin`: Specialized mixin for DD/MM/YYYY format
+  - `DateNumberSerializerMixin`: Specialized mixin for YYYYMMDD format, serialized as a integer value instead of string
 
 ## Installation
 

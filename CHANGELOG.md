@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### [Unreleased]
 
-#### Changed
+#### Features
+ + added DateNumberSerializerMixin class
+
+#### Changes
  + 
 
 ### [0.1.0] - 2025-05-10
@@ -16,6 +19,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   + DateSerializerMixin and DateDMYSerializerMixin classes
   + all tests with 100% coverage
 
-#### Features
-
- * 
