@@ -18,7 +18,7 @@ Example:
 
 """
 from datetime import date, datetime
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Optional
 
 from pydantic import ConfigDict, field_validator
 
@@ -45,7 +45,7 @@ class DateSerializerMixin:
 
         # Collect date fields
         for field_name, field_info in cls.model_fields.items():
-            if field_info.annotation == date:
+            if field_info.annotation == date or field_info.annotation == Optional[date]:
                 cls.__date_fields__.add(field_name)
 
         # Update the model_config with json_encoders for date formatting
@@ -58,6 +58,8 @@ class DateSerializerMixin:
     def validate_date_format(cls, v: Any, info):
         """Convert string dates in the specified format to date objects."""
         if info.field_name in cls.__date_fields__ and isinstance(v, str):
+            if v == '':
+                return None
             try:
                 return datetime.strptime(v, cls.__date_format__).date()
             except ValueError as e:
@@ -104,6 +106,8 @@ class DateNumberSerializerMixin(DateSerializerMixin):
     def validate_date_format(cls, v: Any, info):
         """Convert string dates in the specified format to date objects."""
         if info.field_name in cls.__date_fields__ and isinstance(v, int):
+            if v == 0:
+                return None
             try:
                 return datetime.strptime(str(v), cls.__date_format__).date()
             except ValueError as e:

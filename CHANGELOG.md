@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 #### Features
  + added DateNumberSerializerMixin class
 
+#### Bug Fixes
+ + Optional[date] in DateSerializerMixin was not working
+ + serialize "" as None in DateDMYSerializerMixin
+ + serialize 0 as None in DateNumberSerializerMixin
+
 #### Changes
  + 
 

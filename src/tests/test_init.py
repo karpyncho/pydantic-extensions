@@ -5,13 +5,20 @@ from unittest import TestCase
 
 from pydantic import BaseModel
 
-from karpyncho.pydantic_extensions import (DateSerializerMixin, DateDMYSerializerMixin, DateNumberSerializerMixin)
+from typing import Optional
 
+from karpyncho.pydantic_extensions import (DateSerializerMixin, DateDMYSerializerMixin, DateNumberSerializerMixin)
 
 
 class MyDataClass(DateSerializerMixin, BaseModel):
     str_field: str
     date_field: date
+
+
+class MyDataOptionalClass(DateSerializerMixin, BaseModel):
+    str_field: str
+    date_field: date
+    optional_date_field: Optional[date]
 
 
 class MyDataDMYClass(DateDMYSerializerMixin, BaseModel):
@@ -23,8 +30,14 @@ class MyDataNumberClass(DateNumberSerializerMixin, BaseModel):
     str_field: str
     date_field: date
 
-class DateSerializerMixinTest(TestCase):
 
+class MyDataNumberOptionalClass(DateNumberSerializerMixin, BaseModel):
+    str_field: str
+    date_field: date
+    optional_date_field: Optional[date]
+
+
+class DateSerializerMixinTest(TestCase):
     def test_date_serializer_mixin_serialize(self):
         data = MyDataClass(str_field="Hola", date_field=date(2023, 1, 3))
         self.assertEqual(data.model_dump(), {"str_field": "Hola", "date_field": "2023-01-03"})
@@ -59,9 +72,15 @@ class DateSerializerMixinTest(TestCase):
         with self.assertRaises(ValueError):
             MyDataClass(**my_dict)
 
+    def test_date_serializer_mixin_deserialize_optional_empty(self):
+        json_raw = '{"str_field": "hola", "date_field": "2019-5-03", "optional_date_field": ""}'
+        my_dict = json.loads(json_raw)
+        obj = MyDataOptionalClass(**my_dict)
+        self.assertEqual(obj.date_field, date(2019, 5, 3))
+        self.assertIsNone(obj.optional_date_field)
+
 
 class DateDMYSerializerMixinTest(TestCase):
-
     def test_date_dmy_serializer_mixin_serialize(self):
         data = MyDataDMYClass(str_field="Hola", date_field=date(2023, 1, 3))
         self.assertEqual(data.model_dump(), {"str_field": "Hola", "date_field": "03/01/2023"})
@@ -128,3 +147,10 @@ class DateNumberSerializerMixinTest(TestCase):
 
         with self.assertRaises(ValueError):
             MyDataNumberClass(**my_dict)
+
+    def test_date_number_serializer_mixin_deserialize_optional_empty(self):
+        json_raw = '{"str_field": "hola", "date_field": 20190503, "optional_date_field": 0}'
+        my_dict = json.loads(json_raw)
+        obj = MyDataNumberOptionalClass(**my_dict)
+        self.assertEqual(obj.date_field, date(2019, 5, 3))
+        self.assertIsNone(obj.optional_date_field)
