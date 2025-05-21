@@ -45,7 +45,7 @@ class DateSerializerMixin:
 
         # Collect date fields
         for field_name, field_info in cls.model_fields.items():
-            if field_info.annotation == date or field_info.annotation == Optional[date]:
+            if field_info.annotation in {date, Optional[date]}:
                 cls.__date_fields__.add(field_name)
 
         # Update the model_config with json_encoders for date formatting
