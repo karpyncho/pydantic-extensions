@@ -8,12 +8,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### [Unreleased]
 
 #### Features
+
+#### Bug Fixes
+
+### [0.1.1] - 2025-06-02
+
+#### Features
  + added DateNumberSerializerMixin class
 
 #### Bug Fixes
  + Optional[date] in DateSerializerMixin was not working
  + serialize "" as None in DateDMYSerializerMixin
  + serialize 0 as None in DateNumberSerializerMixin
+ + typo in README.md
 
 #### Changes
  + 
