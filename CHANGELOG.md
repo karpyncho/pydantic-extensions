@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 #### Bug Fixes
 
+### [0.1.2] - 2025-06-02
+
+#### Bug Fixes
+ + changed version number in pyproject.toml
+ + changed dependencies section
+
 ### [0.1.1] - 2025-06-02
 
 #### Features
