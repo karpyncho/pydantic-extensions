@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "karpyncho-pydantic-extensions"
-version = "0.1.0"
+version = "0.1.2"
 authors = [
     {name = "Sebastian Quiles", email = "qsebas@gmail.com"},
 ]
@@ -29,9 +29,10 @@ dynamic = ["dependencies"]
 homepage = "https://github.com/karpyncho/pydantic-extensions"
 # documentation = "https://readthedocs.org"
 repository = "https://github.com/karpyncho/pydantic-extensions"
+
 changelog = "https://github.com/karpyncho/pydantic-extensions/blob/main/CHANGELOG.md"
 
-[project.optional-dependencies]
+[tool.setuptools.dynamic.optional-dependencies]
 dev = {file = ["requirements-dev.txt"]}
 
 [tool.setuptools.dynamic]
