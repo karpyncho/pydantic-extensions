@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 #### Bug Fixes
 
 #### Changes
+ + added linters in .github/workflows/check.yml
 
 ### [0.2.0] - 2025-06-04
 
