@@ -1,6 +1,7 @@
 import json
 
 from datetime import date
+from typing import Annotated
 from unittest import TestCase
 
 from pydantic import BaseModel
@@ -44,7 +45,7 @@ class MyDataNumberOptionalClass(DateNumberSerializerMixin, BaseModel):
 
 class DateSerializerMixinTest(TestCase):
     def test_date_serializer_mixin_serialize(self) -> None:
-        data = MyDataClass(str_field="Hola", date_field=date(2023, 1, 3))
+        data = MyDataClass(str_field="Hola", date_field=date(2023, 1, 3))  # type: ignore[arg-type]
         self.assertEqual(
             data.model_dump(), {"str_field": "Hola", "date_field": "2023-01-03"}
         )
@@ -93,7 +94,7 @@ class DateSerializerMixinTest(TestCase):
 
 class DateDMYSerializerMixinTest(TestCase):
     def test_date_dmy_serializer_mixin_serialize(self) -> None:
-        data = MyDataDMYClass(str_field="Hola", date_field=date(2023, 1, 3))
+        data = MyDataDMYClass(str_field="Hola", date_field=date(2023, 1, 3))  # type: ignore[arg-type]
         self.assertEqual(
             data.model_dump(), {"str_field": "Hola", "date_field": "03/01/2023"}
         )
@@ -133,7 +134,7 @@ class DateDMYSerializerMixinTest(TestCase):
 class DateNumberSerializerMixinTest(TestCase):
 
     def test_date_number_serializer_mixin_serialize(self) -> None:
-        data = MyDataNumberClass(str_field="Hola", date_field=date(2023, 1, 3))
+        data = MyDataNumberClass(str_field="Hola", date_field=date(2023, 1, 3))  # type: ignore[arg-type]
         self.assertEqual(
             data.model_dump(), {"str_field": "Hola", "date_field": 20230103}
         )
@@ -330,3 +331,202 @@ class DateFormatTest(TestCase):
         schema = fmt.__get_pydantic_core_schema__(date, handler)  # type: ignore
         # Verify the schema is a CoreSchema object
         self.assertIsNotNone(schema)
+
+
+class FlexibleDateFormatTest(TestCase):
+    """Tests for per-field date format annotation support."""
+
+    def test_annotated_field_with_dmy_format(self) -> None:
+        """Test field with Annotated[date, DMY_FORMAT] uses correct format."""
+
+        class Person(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            birth_date: Annotated[date, DMY_FORMAT]
+
+        person = Person(name="John", birth_date="21/01/2000")  # type: ignore
+        self.assertEqual(person.birth_date, date(2000, 1, 21))
+        self.assertEqual(
+            person.model_dump(),
+            {"name": "John", "birth_date": "21/01/2000"},
+        )
+
+    def test_mixed_formats_in_same_model(self) -> None:
+        """Test model with fields using different formats."""
+
+        class Event(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            start_date: date
+            end_date: Annotated[date, DMY_FORMAT]
+            registration_date: Annotated[date, MDY_FORMAT]
+
+        event = Event(  # type: ignore[call-arg]
+            name="Conference",
+            start_date="2023-06-01",  # type: ignore[arg-type]  # ISO format
+            end_date="05/06/2023",  # type: ignore[arg-type]  # DMY format
+            registration_date="01/03/2023",  # type: ignore[arg-type]  # MDY format
+        )
+
+        self.assertEqual(event.start_date, date(2023, 6, 1))
+        self.assertEqual(event.end_date, date(2023, 6, 5))
+        self.assertEqual(event.registration_date, date(2023, 1, 3))
+
+        dumped = event.model_dump()
+        self.assertEqual(dumped["start_date"], "2023-06-01")  # ISO
+        self.assertEqual(dumped["end_date"], "05/06/2023")  # DMY
+        self.assertEqual(dumped["registration_date"], "01/03/2023")  # MDY
+
+    def test_custom_format_with_annotated(self) -> None:
+        """Test using custom DateFormat with Annotated."""
+
+        custom_format = DateFormat("%d-%m-%Y")
+
+        class Person(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            birth_date: Annotated[date, custom_format]
+
+        person = Person(name="Alice", birth_date="15-03-1990")  # type: ignore
+        self.assertEqual(person.birth_date, date(1990, 3, 15))
+        self.assertEqual(
+            person.model_dump(),
+            {"name": "Alice", "birth_date": "15-03-1990"},
+        )
+
+    def test_optional_annotated_field(self) -> None:
+        """Test optional field with Annotated format."""
+
+        class Application(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            application_date: date
+            approval_date: Annotated[date | None, DMY_FORMAT] = None
+
+        # With approval date
+        app1 = Application(  # type: ignore
+            name="John",
+            application_date="2024-03-15",  # type: ignore[arg-type]
+            approval_date="20/03/2024",  # type: ignore[arg-type]
+        )
+        self.assertEqual(app1.approval_date, date(2024, 3, 20))
+        self.assertEqual(app1.model_dump()["approval_date"], "20/03/2024")
+
+        # Without approval date (omitted field)
+        app2 = Application(  # type: ignore
+            name="Jane", application_date="2024-03-15"  # type: ignore[arg-type]
+        )
+        self.assertIsNone(app2.approval_date)
+
+    def test_annotated_with_number_serializer(self) -> None:
+        """Test Annotated formats with DateNumberSerializerMixin."""
+
+        class Transaction(DateNumberSerializerMixin, BaseModel):
+            __date_format__ = NUMBER_FORMAT
+            transaction_id: str
+            transaction_date: date
+            approval_date: Annotated[date, DMY_FORMAT]
+
+        trans = Transaction(  # type: ignore
+            transaction_id="TXN001",
+            transaction_date=20231225,  # type: ignore[arg-type]
+            approval_date="25/12/2023",  # type: ignore[arg-type]
+        )
+
+        self.assertEqual(trans.transaction_date, date(2023, 12, 25))
+        self.assertEqual(trans.approval_date, date(2023, 12, 25))
+
+        dumped = trans.model_dump()
+        # transaction_date should be integer (numeric format)
+        self.assertEqual(dumped["transaction_date"], 20231225)
+        # approval_date should be string (DMY format)
+        self.assertEqual(dumped["approval_date"], "25/12/2023")
+
+    def test_annotated_with_dmy_serializer(self) -> None:
+        """Test Annotated formats with DateDMYSerializerMixin."""
+
+        class Document(DateDMYSerializerMixin, BaseModel):
+            title: str
+            created_date: date
+            updated_date: Annotated[date, ISO_FORMAT]
+
+        doc = Document(  # type: ignore
+            title="Report",
+            created_date="15/03/2024",  # type: ignore[arg-type]
+            updated_date="2024-03-20",  # type: ignore[arg-type]
+        )
+
+        dumped = doc.model_dump()
+        self.assertEqual(dumped["created_date"], "15/03/2024")  # DMY (default)
+        self.assertEqual(dumped["updated_date"], "2024-03-20")  # ISO (annotated)
+
+    def test_deserialization_with_annotated_formats(self) -> None:
+        """Test JSON deserialization with annotated formats."""
+
+        class Person(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            birth_date: Annotated[date, DMY_FORMAT]
+
+        json_raw = '{"name": "Bob", "birth_date": "10/05/2000"}'
+        my_dict = json.loads(json_raw)
+        person = Person(**my_dict)
+
+        self.assertEqual(person.name, "Bob")
+        self.assertEqual(person.birth_date, date(2000, 5, 10))
+
+    def test_annotated_field_wrong_format_error(self) -> None:
+        """Test validation error when using wrong format for annotated field."""
+
+        class Person(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            birth_date: Annotated[date, DMY_FORMAT]
+
+        with self.assertRaises(ValueError):
+            Person(  # type: ignore[call-arg]
+                name="Charlie", birth_date="2000-05-10"  # type: ignore[arg-type]
+            )  # ISO format, but DMY expected
+
+    def test_multiple_annotated_fields_same_format(self) -> None:
+        """Test multiple annotated fields using the same custom format."""
+
+        custom_fmt = DateFormat("%Y/%m/%d")
+
+        class Report(DateSerializerMixin, BaseModel):
+            __date_format__ = DMY_FORMAT
+            title: str
+            start_date: Annotated[date, custom_fmt]
+            end_date: Annotated[date, custom_fmt]
+            created_date: date  # Uses default DMY format
+
+        report = Report(  # type: ignore[call-arg]
+            title="Q1 Report",
+            start_date="2024/01/01",  # type: ignore[arg-type]
+            end_date="2024/03/31",  # type: ignore[arg-type]
+            created_date="15/04/2024",  # type: ignore[arg-type]
+        )
+
+        dumped = report.model_dump()
+        self.assertEqual(dumped["start_date"], "2024/01/01")
+        self.assertEqual(dumped["end_date"], "2024/03/31")
+        self.assertEqual(dumped["created_date"], "15/04/2024")
+
+    def test_annotated_with_number_mixed_fields(self) -> None:
+        """Test NumberSerializer with mix of numeric and string formats."""
+
+        class MixedDates(DateNumberSerializerMixin, BaseModel):
+            __date_format__ = NUMBER_FORMAT
+            numeric_date: date
+            string_date: Annotated[date, DMY_FORMAT]
+
+        obj = MixedDates(  # type: ignore[call-arg]
+            numeric_date=20240315,  # type: ignore[arg-type]
+            string_date="15/03/2024",  # type: ignore[arg-type]
+        )
+
+        dumped = obj.model_dump()
+        # numeric_date should be integer
+        self.assertEqual(dumped["numeric_date"], 20240315)
+        # string_date should be string
+        self.assertEqual(dumped["string_date"], "15/03/2024")

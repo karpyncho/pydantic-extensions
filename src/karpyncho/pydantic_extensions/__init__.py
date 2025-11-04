@@ -27,10 +27,13 @@ Example:
 """
 from datetime import date
 from datetime import datetime
+from typing import Annotated
 from typing import Any
 from typing import ClassVar
 from typing import Protocol
 from typing import cast
+from typing import get_args
+from typing import get_origin
 from typing import runtime_checkable
 
 from pydantic import BaseModel
@@ -40,6 +43,20 @@ from pydantic import field_validator
 from pydantic.fields import FieldInfo
 
 from pydantic_core import core_schema
+
+# Export public API
+__all__ = [
+    "Annotated",
+    "DateFormat",
+    "DateSerializerMixin",
+    "DateDMYSerializerMixin",
+    "DateNumberSerializerMixin",
+    "ISO_FORMAT",
+    "DMY_FORMAT",
+    "MDY_FORMAT",
+    "NUMBER_FORMAT",
+    "PydanticModelProtocol",
+]
 
 
 class DateFormat:
@@ -130,66 +147,105 @@ class DateSerializerMixin:
     - A string: __date_format__ = "%Y-%m-%d"
     - A DateFormat constant: __date_format__ = ISO_FORMAT
 
+    For per-field formats, use Annotated:
+    - birth_date: Annotated[date, DMY_FORMAT]
+    - created_at: Annotated[date, DateFormat("%Y/%m/%d")]
+
     Attributes:
-        __date_format__: ClassVar - Date format string or DateFormat object (default: ISO_FORMAT)
-        __date_fields__: ClassVar - Set of field names that are date types
+        __date_format__: ClassVar - Default date format (default: ISO_FORMAT)
+        __date_fields__: ClassVar - Set of date field names
+        __date_fields_config__: ClassVar - Dict mapping field names to formats
 
     Example:
         >>> from datetime import date
         >>> from pydantic import BaseModel
-        >>> from karpyncho.pydantic_extensions import DateSerializerMixin, ISO_FORMAT
+        >>> from typing import Annotated
+        >>> from karpyncho.pydantic_extensions import DateSerializerMixin, ISO_FORMAT, DMY_FORMAT
         >>> class Person(DateSerializerMixin, BaseModel):
         ...     __date_format__ = ISO_FORMAT
         ...     name: str
-        ...     birth_date: date
+        ...     birth_date: Annotated[date, DMY_FORMAT]  # Uses DD/MM/YYYY
+        ...     created_at: date  # Uses default ISO format
     """
 
     # Class variables
     __date_fields__: ClassVar[set] = set()
+    __date_fields_config__: ClassVar[dict[str, str]] = {}
     __date_format__: ClassVar[str | DateFormat] = "%Y-%m-%d"  # Default ISO format
 
     # Empty config to start with
     model_config = ConfigDict()
 
     @classmethod
+    def _get_date_format_from_metadata(cls, field_info, default_format):
+        """Extract format from field metadata, return default if not found."""
+        if not field_info.metadata:
+            return default_format
+        for metadata in field_info.metadata:
+            if isinstance(metadata, DateFormat):
+                return str(metadata)
+        return default_format
+
+    @classmethod
+    def _is_date_field(cls, annotation):
+        """Check if annotation represents a date field."""
+        if annotation is date or annotation == date | None:
+            return True
+        origin = get_origin(annotation)
+        if origin in (type(date | None), type(None)):
+            args = get_args(annotation)
+            return date in args or any(
+                arg is date for arg in args if arg is not type(None)
+            )
+        return False
+
+    @classmethod
     def __pydantic_init_subclass__(cls, **kwargs):
-        """Collect all date fields when subclass is initialized."""
+        """Collect all date fields and their formats when subclass is initialized."""
         pydantic_cls = cast("type[PydanticModelProtocol]", cls)
         cast(BaseModel, super()).__pydantic_init_subclass__(**kwargs)  # noqa: TC006
 
-        # Collect date fields
-        for field_name, field_info in pydantic_cls.model_fields.items():
-            if field_info.annotation in {date, date | None}:
-                cls.__date_fields__.add(field_name)
+        # Reset class variables for each subclass
+        cls.__date_fields__ = set()
+        cls.__date_fields_config__ = {}
+        default_format_str = str(cls.__date_format__)
 
-        # Convert DateFormat to string if needed
-        date_format_str = str(cls.__date_format__)
+        # Collect date fields and their specific formats
+        for field_name, field_info in pydantic_cls.model_fields.items():
+            if cls._is_date_field(field_info.annotation):
+                cls.__date_fields__.add(field_name)
+                field_format = cls._get_date_format_from_metadata(
+                    field_info, default_format_str
+                )
+                cls.__date_fields_config__[field_name] = field_format
 
         # Update the model_config with json_encoders for date formatting
         cls.model_config = ConfigDict(
-            json_encoders={date: lambda d: d.strftime(date_format_str)}
+            json_encoders={date: lambda d: d.strftime(default_format_str)}
         )
 
     @field_validator("*", mode="before")
     @classmethod
     def validate_date_format(cls, v: Any, info):
         """Convert string dates in the specified format to date objects."""
-        if info.field_name in cls.__date_fields__ and isinstance(v, str):
-            if v == "":
+        if info.field_name in cls.__date_fields_config__:
+            if v is None or v == "":
                 return None
-            date_format_str = str(cls.__date_format__)
-            try:
-                return datetime.strptime(v, date_format_str).date()
-            except ValueError as e:
-                error_msg = f"Date must be in {date_format_str} format: {e}"
-                raise ValueError(error_msg) from e
+
+            date_format_str = cls.__date_fields_config__[info.field_name]
+
+            if isinstance(v, str):
+                try:
+                    return datetime.strptime(v, date_format_str).date()
+                except ValueError as e:
+                    error_msg = f"Date must be in {date_format_str} format: {e}"
+                    raise ValueError(error_msg) from e
         return v
 
     def model_dump(self, **kwargs):
-        """Override model_dump to format dates according to __date_format__."""
+        """Override model_dump to format dates according to their specific formats."""
         data = cast("BaseModel", super()).model_dump(**kwargs)
-        date_format_str = str(self.__date_format__)
-        for field_name in self.__date_fields__:
+        for field_name, date_format_str in self.__date_fields_config__.items():
             if field_name in data and isinstance(data[field_name], date):
                 data[field_name] = data[field_name].strftime(date_format_str)
         return data
@@ -249,30 +305,55 @@ class DateNumberSerializerMixin(DateSerializerMixin):
 
     # Only override the date format
     __date_format__: ClassVar[str | DateFormat] = NUMBER_FORMAT
+    __numeric_fields__: ClassVar[set] = set()
+
+    @classmethod
+    def __pydantic_init_subclass__(cls, **kwargs):
+        """Initialize and mark which fields use numeric format."""
+        super().__pydantic_init_subclass__(**kwargs)
+        # Track which fields are numeric (have %Y%m%d or similar patterns without separators)
+        cls.__numeric_fields__ = set()
+        for field_name, field_format in cls.__date_fields_config__.items():
+            # Check if format is numeric (no separators like -, /, etc.)
+            if all(c not in field_format for c in ["/", "-", "."]):
+                cls.__numeric_fields__.add(field_name)
 
     @field_validator("*", mode="before")
     @classmethod
     def validate_date_format(cls, v: Any, info):
-        """Convert integer dates in YYYYMMDD format to date objects."""
-        if info.field_name in cls.__date_fields__ and isinstance(v, int):
-            if v == 0:
-                return None
-            date_format_str = str(cls.__date_format__)
+        """Convert dates in their respective formats to date objects."""
+        if info.field_name not in cls.__date_fields_config__:
+            return v
+
+        if v is None or v == "":
+            return None
+
+        date_format_str = cls.__date_fields_config__[info.field_name]
+
+        # Check if this field uses numeric format
+        if info.field_name in cls.__numeric_fields__:
+            if isinstance(v, int):
+                if v == 0:
+                    return None
+                try:
+                    return datetime.strptime(str(v), date_format_str).date()
+                except ValueError as e:
+                    error_msg = f"Date must be in {date_format_str} format: {e}"
+                    raise ValueError(error_msg) from e
+        # For non-numeric fields, process strings
+        elif isinstance(v, str):
             try:
-                return datetime.strptime(str(v), date_format_str).date()
+                return datetime.strptime(v, date_format_str).date()
             except ValueError as e:
                 error_msg = f"Date must be in {date_format_str} format: {e}"
                 raise ValueError(error_msg) from e
         return v
 
     def model_dump(self, **kwargs):
-        """Override model_dump to format dates as integers according to __date_format__."""
+        """Override model_dump to format dates as integers according to their format."""
         # Call parent's model_dump which converts dates to strings
         data = super().model_dump(**kwargs)
-        date_format_str = str(self.__date_format__)
-        for field_name in self.__date_fields__:
+        for field_name in self.__numeric_fields__:
             if field_name in data and isinstance(data[field_name], str):
-                data[field_name] = int(
-                    getattr(self, field_name).strftime(date_format_str)
-                )
+                data[field_name] = int(data[field_name])
         return data
