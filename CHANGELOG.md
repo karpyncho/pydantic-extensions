@@ -1,48 +1,93 @@
-## CHANGELOG: karpyncho-stdout-context
+## Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### [Unreleased]
+## [Unreleased]
 
-#### Features
+### Added
 
-#### Bug Fixes
+- **DateFormat class**: Lightweight wrapper for date format specifications
+  - Provides type-safe format handling
+  - Supports equality comparison and hashing
+  - Works seamlessly with mixins
+- **Predefined format constants** for convenience:
+  - `ISO_FORMAT`: ISO 8601 format (YYYY-MM-DD)
+  - `DMY_FORMAT`: European format (DD/MM/YYYY)
+  - `MDY_FORMAT`: American format (MM/DD/YYYY)
+  - `NUMBER_FORMAT`: Numeric format (YYYYMMDD)
+- Enhanced README.md with comprehensive examples and use cases
+  - Added section on using predefined format constants
+  - Added section on creating custom date formats
+- Updated CLAUDE.md with detailed development guidance
+  - Documented DateFormat class architecture
+  - Updated project overview with format constants
+- Better error handling documentation with validation examples
+- Comprehensive test suite for DateFormat and constants (16 new tests)
 
-#### Changes
- + added linters in .github/workflows/check.yml
+### Changed
 
-### [0.2.0] - 2025-06-04
+- `__date_format__` ClassVar now accepts both string and DateFormat objects
+- GitHub Actions workflow improvements for better CI/CD coverage
 
-#### Changes
- + type hints
- + drop python 3.9 support
+### Security
 
-### [0.1.2] - 2025-06-02
+- Bandit security scanning enabled in CI/CD pipeline
 
-#### Bug Fixes
- + changed version number in pyproject.toml
- + changed dependencies section
+## [0.2.0] - 2025-07-04
 
-### [0.1.1] - 2025-06-02
+### Added
 
-#### Features
- + added DateNumberSerializerMixin class
+- Full type hints throughout codebase for better IDE support and type checking
+- Comprehensive test coverage with mypy validation
+- Linters integration in GitHub Actions workflow (flake8, pylint, bandit, mypy)
 
-#### Bug Fixes
- + Optional[date] in DateSerializerMixin was not working
- + serialize "" as None in DateDMYSerializerMixin
- + serialize 0 as None in DateNumberSerializerMixin
- + typo in README.md
+### Changed
 
-#### Changes
- + 
+- Improved code quality standards with stricter linting rules
+- Enhanced type safety with full type annotations
 
-### [0.1.0] - 2025-05-10
+### Removed
 
-* first version with
-  + DateSerializerMixin and DateDMYSerializerMixin classes
-  + all tests with 100% coverage
+- Dropped Python 3.9 support (minimum now 3.10)
+- Removed legacy type annotation patterns
+
+## [0.1.2] - 2025-07-02
+
+### Fixed
+
+- Corrected version number in pyproject.toml
+- Updated dependencies section structure for proper package metadata
+
+## [0.1.1] - 2025-05-12
+
+### Added
+
+- **DateNumberSerializerMixin**: New mixin for YYYYMMDD integer format dates
+  - Accepts integer dates in YYYYMMDD format
+  - Serializes dates as integers instead of strings
+  - Useful for legacy systems and numeric-based date storage
+
+### Fixed
+
+- Fixed Optional[date] field handling in DateSerializerMixin
+  - Optional date fields now properly accept None values
+  - Empty strings ("") correctly convert to None in string-based formats
+  - Zero (0) correctly converts to None in numeric format
+- Fixed typo in README.md documentation
+
+## [0.1.0] - 2025-05-10
+
+### Added
+
+- Initial release with core date serialization functionality
+- **DateSerializerMixin**: Generic mixin for customizable date formats (default: ISO YYYY-MM-DD)
+- **DateDMYSerializerMixin**: Specialized mixin for European DD/MM/YYYY format
+- Comprehensive test suite with 100% code coverage
+- Full support for Pydantic v2.0+
+- Support for Python 3.10, 3.11, 3.12, 3.13
+- Automatic date field detection and validation
+- JSON serialization/deserialization support
 

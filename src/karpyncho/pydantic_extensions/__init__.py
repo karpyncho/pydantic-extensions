@@ -7,6 +7,8 @@ offering custom mixins for handling date serialization in various formats.
 Key Features:
 - `DateSerializerMixin`: A mixin for handling dates with a customizable format.
 - `DateDMYSerializerMixin`: A specific mixin for handling dates in DD/MM/YYYY format.
+- `DateNumberSerializerMixin`: A mixin for handling dates in YYYYMMDD integer format.
+- Predefined date format constants for convenience.
 - Validators for converting string dates to date objects.
 
 Usage:
@@ -14,8 +16,13 @@ Import the necessary components from the package to extend your Pydantic models
 and leverage additional functionalities.
 
 Example:
-    from karpyncho.pydantic_extensions import DateSerializerMixin,
-    DateDMYSerializerMixin
+    from karpyncho.pydantic_extensions import (
+        DateSerializerMixin,
+        DateDMYSerializerMixin,
+        DateNumberSerializerMixin,
+        ISO_FORMAT,
+        DMY_FORMAT,
+    )
 
 """
 from datetime import date
@@ -28,8 +35,76 @@ from typing import runtime_checkable
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
+from pydantic import GetCoreSchemaHandler
 from pydantic import field_validator
 from pydantic.fields import FieldInfo
+
+from pydantic_core import core_schema
+
+
+class DateFormat:
+    """
+    Represents a date format specification for use with date serialization mixins.
+
+    This class provides a convenient way to define and document date formats
+    used throughout your Pydantic models.
+
+    Args:
+        format_str: The strftime format string for date serialization/deserialization
+
+    Attributes:
+        format: The strftime format string
+
+    Example:
+        >>> custom_format = DateFormat("%d/%m/%Y")
+        >>> custom_format.format
+        '%d/%m/%Y'
+    """
+
+    def __init__(self, format_str: str) -> None:
+        """Initialize a DateFormat with a strftime format string."""
+        self.format = format_str
+
+    def __str__(self) -> str:
+        """Return the format string representation."""
+        return self.format
+
+    def __repr__(self) -> str:
+        """Return a detailed representation of the DateFormat."""
+        return f"DateFormat('{self.format}')"
+
+    def __eq__(self, other: object) -> bool:
+        """Check equality based on format string."""
+        if isinstance(other, DateFormat):
+            return self.format == other.format
+        return False
+
+    def __hash__(self) -> int:
+        """Make DateFormat hashable."""
+        return hash(self.format)
+
+    def __get_pydantic_core_schema__(
+        self, source_type: Any, handler: GetCoreSchemaHandler  # pylint: disable=unused-argument
+    ) -> core_schema.CoreSchema:
+        """Handle the schema generation for Pydantic."""
+        return core_schema.no_info_after_validator_function(
+            lambda x: x,
+            handler(date)
+        )
+
+
+# Pre-defined format markers for convenience
+ISO_FORMAT = DateFormat("%Y-%m-%d")
+"""ISO 8601 date format: YYYY-MM-DD"""
+
+DMY_FORMAT = DateFormat("%d/%m/%Y")
+"""European date format: DD/MM/YYYY"""
+
+MDY_FORMAT = DateFormat("%m/%d/%Y")
+"""American date format: MM/DD/YYYY"""
+
+NUMBER_FORMAT = DateFormat("%Y%m%d")
+"""Numeric date format: YYYYMMDD (for integer serialization)"""
 
 
 @runtime_checkable
@@ -47,13 +122,31 @@ class PydanticModelProtocol(Protocol):  # pylint: disable=too-few-public-methods
 class DateSerializerMixin:
     """
     Generic mixin for handling dates with custom format in Pydantic models.
-    it will accept optionals 0s in day and month both (2023-01-05) and (2023-1-5) are
-    valid dates
+
+    It will accept optional leading zeros in day and month, so both
+    (2023-01-05) and (2023-1-5) are valid dates.
+
+    You can specify the date format using either:
+    - A string: __date_format__ = "%Y-%m-%d"
+    - A DateFormat constant: __date_format__ = ISO_FORMAT
+
+    Attributes:
+        __date_format__: ClassVar - Date format string or DateFormat object (default: ISO_FORMAT)
+        __date_fields__: ClassVar - Set of field names that are date types
+
+    Example:
+        >>> from datetime import date
+        >>> from pydantic import BaseModel
+        >>> from karpyncho.pydantic_extensions import DateSerializerMixin, ISO_FORMAT
+        >>> class Person(DateSerializerMixin, BaseModel):
+        ...     __date_format__ = ISO_FORMAT
+        ...     name: str
+        ...     birth_date: date
     """
 
     # Class variables
     __date_fields__: ClassVar[set] = set()
-    __date_format__: ClassVar[str] = "%Y-%m-%d"  # Default ISO format
+    __date_format__: ClassVar[str | DateFormat] = "%Y-%m-%d"  # Default ISO format
 
     # Empty config to start with
     model_config = ConfigDict()
@@ -69,9 +162,12 @@ class DateSerializerMixin:
             if field_info.annotation in {date, date | None}:
                 cls.__date_fields__.add(field_name)
 
+        # Convert DateFormat to string if needed
+        date_format_str = str(cls.__date_format__)
+
         # Update the model_config with json_encoders for date formatting
         cls.model_config = ConfigDict(
-            json_encoders={date: lambda d: d.strftime(cls.__date_format__)}
+            json_encoders={date: lambda d: d.strftime(date_format_str)}
         )
 
     @field_validator("*", mode="before")
@@ -81,69 +177,102 @@ class DateSerializerMixin:
         if info.field_name in cls.__date_fields__ and isinstance(v, str):
             if v == "":
                 return None
+            date_format_str = str(cls.__date_format__)
             try:
-                return datetime.strptime(v, cls.__date_format__).date()
+                return datetime.strptime(v, date_format_str).date()
             except ValueError as e:
-                error_msg = f"Date must be in {cls.__date_format__} format: {e}"
+                error_msg = f"Date must be in {date_format_str} format: {e}"
                 raise ValueError(error_msg) from e
         return v
 
     def model_dump(self, **kwargs):
         """Override model_dump to format dates according to __date_format__."""
         data = cast("BaseModel", super()).model_dump(**kwargs)
+        date_format_str = str(self.__date_format__)
         for field_name in self.__date_fields__:
             if field_name in data and isinstance(data[field_name], date):
-                data[field_name] = data[field_name].strftime(self.__date_format__)
+                data[field_name] = data[field_name].strftime(date_format_str)
         return data
 
 
 class DateDMYSerializerMixin(DateSerializerMixin):
     """
-    Specific mixin for handling dates in DD/MM/YYYY format in Pydantic models.
-    it will accept optionals 0s in day and month both (05/01/2023) and (5/1/2023) are
-    valid dates
+    Specific mixin for handling dates in DD/MM/YYYY (European) format in Pydantic models.
+
+    It will accept optional leading zeros in day and month, so both
+    (05/01/2023) and (5/1/2023) are valid dates.
+
+    This mixin is equivalent to:
+        class MyModel(DateSerializerMixin, BaseModel):
+            __date_format__ = DMY_FORMAT
+
+    Example:
+        >>> from datetime import date
+        >>> from pydantic import BaseModel
+        >>> from karpyncho.pydantic_extensions import DateDMYSerializerMixin
+        >>> class Person(DateDMYSerializerMixin, BaseModel):
+        ...     name: str
+        ...     birth_date: date
+        >>> person = Person(name="John", birth_date="21/01/2000")
     """
 
     # Only override the date format
-    __date_format__: ClassVar[str] = "%d/%m/%Y"
+    __date_format__: ClassVar[str | DateFormat] = DMY_FORMAT
 
 
 class DateNumberSerializerMixin(DateSerializerMixin):
     """
-    Mixin for handling date serialization in 'YYYYMMDD' format in Pydantic models.
+    Mixin for handling date serialization in YYYYMMDD (numeric) format in Pydantic models.
 
     This mixin extends the DateSerializerMixin to validate and convert dates
-    represented as integers in the 'YYYYMMDD' format to date objects.
-    examples of valid fields are '20230512' and '20230508'.
+    represented as integers in the YYYYMMDD format to date objects.
 
-    Fields:
-        __date_format__: ClassVar[str] = '%Y%m%d'
+    Valid input examples: 20230512, 20230508
+    Input is expected as integers and output will be serialized as integers.
+
+    This mixin is equivalent to:
+        class MyModel(DateSerializerMixin, BaseModel):
+            __date_format__ = NUMBER_FORMAT
+
+    Attributes:
+        __date_format__: ClassVar[str | DateFormat] = NUMBER_FORMAT ('%Y%m%d')
+
+    Example:
+        >>> from datetime import date
+        >>> from pydantic import BaseModel
+        >>> from karpyncho.pydantic_extensions import DateNumberSerializerMixin
+        >>> class Transaction(DateNumberSerializerMixin, BaseModel):
+        ...     transaction_id: str
+        ...     transaction_date: date
+        >>> trans = Transaction(transaction_id="TXN001", transaction_date=20231225)
     """
 
     # Only override the date format
-    __date_format__: ClassVar[str] = "%Y%m%d"
+    __date_format__: ClassVar[str | DateFormat] = NUMBER_FORMAT
 
     @field_validator("*", mode="before")
     @classmethod
     def validate_date_format(cls, v: Any, info):
-        """Convert string dates in the specified format to date objects."""
+        """Convert integer dates in YYYYMMDD format to date objects."""
         if info.field_name in cls.__date_fields__ and isinstance(v, int):
             if v == 0:
                 return None
+            date_format_str = str(cls.__date_format__)
             try:
-                return datetime.strptime(str(v), cls.__date_format__).date()
+                return datetime.strptime(str(v), date_format_str).date()
             except ValueError as e:
-                error_msg = f"Date must be in {cls.__date_format__} format: {e}"
+                error_msg = f"Date must be in {date_format_str} format: {e}"
                 raise ValueError(error_msg) from e
         return v
 
     def model_dump(self, **kwargs):
-        """Override model_dump to format dates according to __date_format__."""
-        # this line is converting all dates fields to str
+        """Override model_dump to format dates as integers according to __date_format__."""
+        # Call parent's model_dump which converts dates to strings
         data = super().model_dump(**kwargs)
+        date_format_str = str(self.__date_format__)
         for field_name in self.__date_fields__:
             if field_name in data and isinstance(data[field_name], str):
                 data[field_name] = int(
-                    getattr(self, field_name).strftime(self.__date_format__)
+                    getattr(self, field_name).strftime(date_format_str)
                 )
         return data

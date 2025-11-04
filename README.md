@@ -1,13 +1,11 @@
 # Karpyncho Pydantic Extensions
 
 [![PyPI version](https://badge.fury.io/py/karpyncho-pydantic-extensions.svg)](https://badge.fury.io/py/karpyncho-pydantic-extensions)
-[![PyPI version](https://img.shields.io/pypi/v/pydantic-extensions.svg)](https://pypi.org/project/karpyncho-pydantic-extensions/)
-
 [![Python versions](https://img.shields.io/pypi/pyversions/pydantic-extensions.svg)](https://pypi.org/project/karpyncho-pydantic-extensions/)
-
-[![check](https://github.com/karpyncho/pydantic-extensions/actions/workflows/check.yml/badge.svg)](https://github.com/karpyncho/pydantic-extensions/actions/workflows/check.yml)
+[![Tests](https://github.com/karpyncho/pydantic-extensions/actions/workflows/check.yml/badge.svg)](https://github.com/karpyncho/pydantic-extensions/actions/workflows/check.yml)
 [![codecov](https://codecov.io/gh/karpyncho/pydantic-extensions/graph/badge.svg?token=swpOXcNXkz)](https://codecov.io/gh/karpyncho/pydantic-extensions)
-[![GitHub License](https://img.shields.io/github/license/karpyncho/pydantic-extensions)](https://github.com/karpyncho/pydantic-extensions/blob/main/LICENSE)
+[![Code Coverage](https://img.shields.io/badge/coverage-100%25-green)](https://codecov.io/gh/karpyncho/pydantic-extensions)
+[![License: MIT](https://img.shields.io/github/license/karpyncho/pydantic-extensions)](https://github.com/karpyncho/pydantic-extensions/blob/main/LICENSE)
 ## Goal
 
 A collection of extensions and enhancements for the Pydantic library, providing custom mixins and utilities to enhance your data validation and serialization capabilities.
@@ -19,10 +17,28 @@ A collection of extensions and enhancements for the Pydantic library, providing 
   - `DateDMYSerializerMixin`: Specialized mixin for DD/MM/YYYY format
   - `DateNumberSerializerMixin`: Specialized mixin for YYYYMMDD format, serialized as an integer value instead of string
 
+- **Predefined Format Constants**: Convenient format markers for common date formats
+  - `ISO_FORMAT`: ISO 8601 format (YYYY-MM-DD)
+  - `DMY_FORMAT`: European format (DD/MM/YYYY)
+  - `MDY_FORMAT`: American format (MM/DD/YYYY)
+  - `NUMBER_FORMAT`: Numeric format (YYYYMMDD)
+  - `DateFormat`: Custom format class for defining your own formats
+
+## Requirements
+
+- **Python**: 3.10, 3.11, 3.12, 3.13
+- **Pydantic**: >= 2.0
+
 ## Installation
 
 ```bash
-pip install pydantic-extensions
+pip install karpyncho-pydantic-extensions
+```
+
+Or with `pip` from the repository:
+
+```bash
+pip install git+https://github.com/karpyncho/pydantic-extensions.git
 ```
 
 ## Usage
@@ -68,7 +84,7 @@ from karpyncho.pydantic_extensions import DateDMYSerializerMixin
 class Person(DateDMYSerializerMixin, BaseModel):
     name: str
     birth_date: date
-    
+
 # The date will be formatted as DD/MM/YYYY
 person = Person(name="John Doe", birth_date="21/01/2000")
 print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '21/01/2000'}
@@ -79,22 +95,104 @@ print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '21/01/2000'}
 
 # You can also deserialize a JSON string
 json_str = '{"name": "John Doe", "birth_date": "21/01/2000"}'
-person_dict = Person.loads(json_str)
-person = Person(**person_dict)  
-print(person)  # {'name': 'John Doe', 'birth_date': '21/01/2000'}
+import json
+person_dict = json.loads(json_str)
+person = Person(**person_dict)
+print(person.model_dump())  # {'name': 'John Doe', 'birth_date': '21/01/2000'}
 ```
 
-### Creating Custom Date Format Mixins
+### Using DateNumberSerializerMixin for YYYYMMDD Integer Format
 
-You can create your own date format mixins by inheriting from `DateSerializerMixin`:
+For numeric date format (YYYYMMDD as integers):
 
 ```python
-from karpyncho.pydantic_extensions import DateSerializerMixin
-from typing import ClassVar
+from datetime import date
+from pydantic import BaseModel
+from karpyncho.pydantic_extensions import DateNumberSerializerMixin
 
-class DateMDYSerializerMixin(DateSerializerMixin):
-    """American-style date format (MM/DD/YYYY)"""
-    __date_format__: ClassVar[str] = "%m/%d/%Y"
+class Transaction(DateNumberSerializerMixin, BaseModel):
+    transaction_id: str
+    transaction_date: date
+
+# Accept integer dates in YYYYMMDD format
+transaction = Transaction(transaction_id="TXN001", transaction_date=20231225)
+print(transaction.model_dump())  # {'transaction_id': 'TXN001', 'transaction_date': 20231225}
+
+# Also works with date objects
+transaction = Transaction(transaction_id="TXN002", transaction_date=date(2023, 12, 25))
+print(transaction.model_dump())  # {'transaction_id': 'TXN002', 'transaction_date': 20231225}
+```
+
+### Using Predefined Date Format Constants
+
+The library provides convenient format constants for common date formats:
+
+```python
+from datetime import date
+from pydantic import BaseModel
+from karpyncho.pydantic_extensions import (
+    DateSerializerMixin,
+    ISO_FORMAT,
+    DMY_FORMAT,
+    MDY_FORMAT,
+    NUMBER_FORMAT,
+)
+
+# Using ISO format (default)
+class Person(DateSerializerMixin, BaseModel):
+    __date_format__ = ISO_FORMAT
+    name: str
+    birth_date: date
+
+# Using European format
+class PersonEU(DateSerializerMixin, BaseModel):
+    __date_format__ = DMY_FORMAT
+    name: str
+    birth_date: date
+
+# Using American format
+class PersonUS(DateSerializerMixin, BaseModel):
+    __date_format__ = MDY_FORMAT
+    name: str
+    birth_date: date
+
+# Using numeric format
+from karpyncho.pydantic_extensions import DateNumberSerializerMixin
+
+class Transaction(DateNumberSerializerMixin, BaseModel):
+    __date_format__ = NUMBER_FORMAT
+    transaction_id: str
+    transaction_date: date
+```
+
+Available predefined constants:
+- `ISO_FORMAT`: ISO 8601 format `YYYY-MM-DD` (default)
+- `DMY_FORMAT`: European format `DD/MM/YYYY`
+- `MDY_FORMAT`: American format `MM/DD/YYYY`
+- `NUMBER_FORMAT`: Numeric format `YYYYMMDD` (for integer serialization)
+
+### Creating Custom Date Formats
+
+You can create your own date format using the `DateFormat` class or by inheriting from `DateSerializerMixin`:
+
+```python
+from datetime import date
+from typing import ClassVar
+from pydantic import BaseModel
+from karpyncho.pydantic_extensions import DateSerializerMixin, DateFormat
+
+# Option 1: Using DateFormat class
+custom_format = DateFormat("%d-%m-%Y")
+
+class Person(DateSerializerMixin, BaseModel):
+    __date_format__ = custom_format
+    name: str
+    birth_date: date
+
+# Option 2: Creating a custom mixin
+class DateCustomSerializerMixin(DateSerializerMixin):
+    """Custom date format (DD-MM-YYYY)"""
+    __date_format__: ClassVar[str] = "%d-%m-%Y"
 ```
 
 ## Advanced Usage
@@ -112,7 +210,7 @@ class Event(DateDMYSerializerMixin, BaseModel):
     title: str
     start_date: date
     end_date: date
-    
+
 event = Event(
     title="Conference",
     start_date="01/06/2023",
@@ -123,6 +221,45 @@ print(event.model_dump())
 # {'title': 'Conference', 'start_date': '01/06/2023', 'end_date': '05/06/2023'}
 ```
 
+### Optional Date Fields
+
+You can use optional date fields:
+
+```python
+from datetime import date
+from pydantic import BaseModel
+from karpyncho.pydantic_extensions import DateDMYSerializerMixin
+
+class Application(DateDMYSerializerMixin, BaseModel):
+    applicant_name: str
+    application_date: date
+    approval_date: date | None = None
+
+# Empty string or None becomes None for optional fields
+app = Application(
+    applicant_name="Jane Smith",
+    application_date="15/03/2024",
+    approval_date=""
+)
+print(app.approval_date)  # None
+
+# Also works with DateNumberSerializerMixin
+from karpyncho.pydantic_extensions import DateNumberSerializerMixin
+
+class NumericApplication(DateNumberSerializerMixin, BaseModel):
+    applicant_name: str
+    application_date: date
+    approval_date: date | None = None
+
+# Zero becomes None for optional fields in numeric format
+app = NumericApplication(
+    applicant_name="John Doe",
+    application_date=20240315,
+    approval_date=0
+)
+print(app.approval_date)  # None
+```
+
 ### Error Handling
 
 The mixins include validation to ensure dates are provided in the correct format:
@@ -130,27 +267,101 @@ The mixins include validation to ensure dates are provided in the correct format
 ```python
 from datetime import date
 from pydantic import BaseModel
+from pydantic import ValidationError
 from karpyncho.pydantic_extensions import DateDMYSerializerMixin
 
 class Person(DateDMYSerializerMixin, BaseModel):
     name: str
     birth_date: date
-    
-# This will raise a validation error
+
+# This will raise a validation error for incorrect format
 try:
     person = Person(name="John Doe", birth_date="2000-01-01")  # Wrong format
-except ValueError as e:
-    print(f"Error: {e}")  # Error: Date must be in %d/%m/%Y format
+except ValidationError as e:
+    print(f"Validation error: {e}")
+
+# This will also raise an error for invalid dates
+try:
+    person = Person(name="Jane Doe", birth_date="32/13/2000")  # Invalid day/month
+except ValidationError as e:
+    print(f"Validation error: {e}")
+```
+
+### JSON Serialization
+
+The mixins work seamlessly with Pydantic's JSON serialization:
+
+```python
+from datetime import date
+from pydantic import BaseModel
+from karpyncho.pydantic_extensions import DateDMYSerializerMixin
+import json
+
+class Person(DateDMYSerializerMixin, BaseModel):
+    name: str
+    birth_date: date
+
+person = Person(name="John Doe", birth_date="21/01/2000")
+
+# Serialize to JSON
+json_str = person.model_dump_json()
+print(json_str)  # {"name":"John Doe","birth_date":"21/01/2000"}
+
+# Deserialize from JSON
+loaded = Person.model_validate_json(json_str)
+print(loaded.birth_date)  # 2000-01-21
 ```
 
 ## How It Works
 
-The mixins utilize Pydantic's initialization hooks and field validators to:
+The mixins utilize Pydantic v2's initialization hooks and field validators to:
 
-1. Detect all date fields automatically
-2. Validate and convert string inputs to date objects
-3. Serialize date objects to strings in the specified format
-4. Override the `model_dump` method to ensure consistent formatting
+1. **Detect** all date fields automatically using `__pydantic_init_subclass__`
+2. **Validate** and convert string/integer inputs to `date` objects using field validators
+3. **Serialize** date objects to the specified format using `model_dump` override
+4. **Encode** JSON dates using the `json_encoders` configuration
+
+The `__date_format__` class variable controls the format string used by all methods.
+
+## Use Cases
+
+- **International Applications**: Handle dates in different formats based on locale (European DD/MM/YYYY vs American MM/DD/YYYY)
+- **Legacy System Integration**: Work with legacy systems that use numeric date formats like YYYYMMDD
+- **Financial/Banking Applications**: Consistent date formatting across transactions and reports
+- **API Development**: Automatically serialize/deserialize dates in API requests and responses
+
+## Supported Mixins Summary
+
+| Mixin | Input Format | Output Format | Use Case |
+|-------|--------------|---------------|----------|
+| `DateSerializerMixin` | ISO (YYYY-MM-DD) | ISO (YYYY-MM-DD) | Standard/Default |
+| `DateDMYSerializerMixin` | DD/MM/YYYY | DD/MM/YYYY | European format |
+| `DateNumberSerializerMixin` | Integer YYYYMMDD | Integer YYYYMMDD | Numeric systems |
+| Custom | User-defined | User-defined | Specific needs |
+
+## Development
+
+To set up a development environment:
+
+```bash
+# Clone the repository
+git clone https://github.com/karpyncho/pydantic-extensions.git
+cd pydantic-extensions
+
+# Install in development mode
+pip install -e ".[dev]"
+
+# Run tests
+pytest src
+
+# Run with specific Pydantic version
+tox -e py313-pydantic211
+
+# Run linters
+tox -e linters
+```
+
+See [CLAUDE.md](./CLAUDE.md) for detailed development documentation.
 
 ## Contributing
 
@@ -158,10 +369,21 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes and ensure tests pass
+4. Commit your changes (`git commit -m 'Add some amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
+
+Please ensure:
+- Code follows PEP 8 style guidelines
+- All tests pass (`pytest src`)
+- Code coverage remains at 100% (required by CI)
+- Linters pass (`tox -e linters`)
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for version history and changes.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
