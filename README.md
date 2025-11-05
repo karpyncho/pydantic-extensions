@@ -195,6 +195,86 @@ class DateCustomSerializerMixin(DateSerializerMixin):
     __date_format__: ClassVar[str] = "%d-%m-%Y"
 ```
 
+### Per-Field Date Formats Using Annotations
+
+You can override the date format on a per-field basis using the `Annotated` type hint. This allows different fields in the same model to use different date formats:
+
+```python
+from datetime import date
+from typing import Annotated
+from pydantic import BaseModel
+from karpyncho.pydantic_extensions import (
+    DateSerializerMixin,
+    ISO_FORMAT,
+    DMY_FORMAT,
+    MDY_FORMAT,
+    DateFormat,
+)
+
+class InternationalEvent(DateSerializerMixin, BaseModel):
+    """Model with different date formats for different fields."""
+    __date_format__ = ISO_FORMAT  # Default format
+
+    event_name: str
+    # European organizer - uses DD/MM/YYYY format
+    eu_start_date: Annotated[date, DMY_FORMAT]
+    # American organizer - uses MM/DD/YYYY format
+    us_start_date: Annotated[date, MDY_FORMAT]
+    # Default ISO format
+    announcement_date: date
+
+# Using the model
+event = InternationalEvent(
+    event_name="Global Conference",
+    eu_start_date="15/06/2024",      # DD/MM/YYYY
+    us_start_date="06/15/2024",      # MM/DD/YYYY
+    announcement_date="2024-01-15"   # YYYY-MM-DD
+)
+
+print(event.model_dump())
+# Output: {
+#     'event_name': 'Global Conference',
+#     'eu_start_date': '15/06/2024',
+#     'us_start_date': '06/15/2024',
+#     'announcement_date': '2024-01-15'
+# }
+```
+
+You can also use custom `DateFormat` objects with annotations:
+
+```python
+from datetime import date
+from typing import Annotated
+from pydantic import BaseModel
+from karpyncho.pydantic_extensions import DateSerializerMixin, DateFormat
+
+class Report(DateSerializerMixin, BaseModel):
+    title: str
+    # Custom format: DD-MM-YYYY with dashes
+    report_date: Annotated[date, DateFormat("%d-%m-%Y")]
+    # Custom format: YYYY/MM/DD with slashes
+    submission_date: Annotated[date, DateFormat("%Y/%m/%d")]
+
+report = Report(
+    title="Annual Report",
+    report_date="25-12-2023",
+    submission_date="2024/01/15"
+)
+
+print(report.model_dump())
+# Output: {
+#     'title': 'Annual Report',
+#     'report_date': '25-12-2023',
+#     'submission_date': '2024/01/15'
+# }
+```
+
+**Key Benefits of Per-Field Annotations:**
+- Override the default format on a per-field basis without creating multiple mixins
+- Mix and match different date formats in the same model
+- Maintain type safety with `Annotated` type hints
+- Works seamlessly with all date field types (required and optional)
+
 ## Advanced Usage
 
 ### Multiple Date Fields
