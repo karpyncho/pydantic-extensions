@@ -1,7 +1,7 @@
 # Karpyncho Pydantic Extensions
 
 [![PyPI version](https://badge.fury.io/py/karpyncho-pydantic-extensions.svg)](https://badge.fury.io/py/karpyncho-pydantic-extensions)
-[![Python versions](https://img.shields.io/pypi/pyversions/pydantic-extensions.svg)](https://pypi.org/project/karpyncho-pydantic-extensions/)
+[![Python versions](https://img.shields.io/pypi/pyversions/karpyncho-pydantic-extensions.svg)](https://pypi.org/project/karpyncho-pydantic-extensions/)
 [![Tests](https://github.com/karpyncho/pydantic-extensions/actions/workflows/check.yml/badge.svg)](https://github.com/karpyncho/pydantic-extensions/actions/workflows/check.yml)
 [![codecov](https://codecov.io/gh/karpyncho/pydantic-extensions/graph/badge.svg?token=swpOXcNXkz)](https://codecov.io/gh/karpyncho/pydantic-extensions)
 [![Code Coverage](https://img.shields.io/badge/coverage-100%25-green)](https://codecov.io/gh/karpyncho/pydantic-extensions)
