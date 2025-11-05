@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `__date_format__` ClassVar now accepts both string and DateFormat objects
 - GitHub Actions workflow improvements for better CI/CD coverage
 - Fixed gh-actions tox mapping to use specific Pydantic version combinations
+- Fixed PyPI badge package name in README for correct version display
 
 ### Security
 
