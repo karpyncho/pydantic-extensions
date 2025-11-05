@@ -530,3 +530,137 @@ class FlexibleDateFormatTest(TestCase):
         self.assertEqual(dumped["numeric_date"], 20240315)
         # string_date should be string
         self.assertEqual(dumped["string_date"], "15/03/2024")
+
+
+class EdgeCaseCoverageTest(TestCase):
+    """Tests for edge cases to achieve 100% coverage."""
+
+    def test_get_date_format_from_metadata_without_date_format(self) -> None:
+        """Test _get_date_format_from_metadata returns default when no DateFormat in metadata."""
+
+        class Person(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            # Field with metadata but no DateFormat object
+            birth_date: Annotated[date, "some string annotation"]
+
+        person = Person(name="John", birth_date="2000-01-21")  # type: ignore
+        # Should use default format (ISO_FORMAT)
+        self.assertEqual(
+            person.model_dump(),
+            {"name": "John", "birth_date": "2000-01-21"},
+        )
+
+    def test_is_date_field_with_union_types(self) -> None:
+        """Test _is_date_field properly detects date in union types."""
+
+        class PersonOptional(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            birth_date: date | None
+
+        # Test with None
+        person1 = PersonOptional(name="John", birth_date=None)  # type: ignore
+        self.assertIsNone(person1.birth_date)
+
+        # Test with date
+        person2 = PersonOptional(name="Jane", birth_date="2000-01-21")  # type: ignore
+        self.assertEqual(person2.birth_date, date(2000, 1, 21))
+
+    def test_date_number_serializer_mixin_empty_string_optional(self) -> None:
+        """Test DateNumberSerializerMixin handles empty string for optional fields."""
+
+        class Transaction(DateNumberSerializerMixin, BaseModel):
+            transaction_id: str
+            transaction_date: date
+            optional_date: date | None = None
+
+        trans = Transaction(
+            transaction_id="TXN001",
+            transaction_date=20231225,  # type: ignore[arg-type]
+            optional_date="",  # type: ignore[arg-type]
+        )
+        self.assertIsNone(trans.optional_date)
+
+    def test_date_number_serializer_mixin_string_value_error(self) -> None:
+        """Test DateNumberSerializerMixin raises error for invalid string date."""
+
+        class Transaction(DateNumberSerializerMixin, BaseModel):
+            transaction_id: str
+            transaction_date: date
+            string_date: Annotated[date, DMY_FORMAT]
+
+        with self.assertRaises(ValueError):
+            Transaction(
+                transaction_id="TXN001",
+                transaction_date=20231225,  # type: ignore[arg-type]
+                string_date="INVALID/DATE/STRING",  # type: ignore[arg-type]
+            )
+
+    def test_annotated_field_without_metadata(self) -> None:
+        """Test Annotated field without format metadata uses default format."""
+
+        class Document(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            title: str
+            created_date: Annotated[date, "just a string"]
+
+        doc = Document(title="Test", created_date="2024-01-15")  # type: ignore
+        self.assertEqual(
+            doc.model_dump(),
+            {"title": "Test", "created_date": "2024-01-15"},
+        )
+
+    def test_date_number_serializer_with_annotated_string_format(self) -> None:
+        """Test DateNumberSerializerMixin with annotated string format field."""
+
+        class Transaction(DateNumberSerializerMixin, BaseModel):
+            transaction_id: str
+            numeric_date: date
+            string_date: Annotated[date, DMY_FORMAT]
+
+        trans = Transaction(
+            transaction_id="TXN001",
+            numeric_date=20231225,  # type: ignore[arg-type]
+            string_date="25/12/2023",  # type: ignore[arg-type]
+        )
+        # String field should be parsed as string, not as numeric
+        self.assertEqual(trans.string_date, date(2023, 12, 25))
+        dumped = trans.model_dump()
+        self.assertEqual(dumped["string_date"], "25/12/2023")
+
+    def test_directly_test_is_date_field_method(self) -> None:
+        """Test _is_date_field method with various union type annotations."""
+
+        # Direct test of the _is_date_field method
+        # This tests the code path for union type detection
+        self.assertTrue(DateSerializerMixin._is_date_field(date))
+        self.assertTrue(DateSerializerMixin._is_date_field(date | None))
+
+        # Test with non-date types
+        self.assertFalse(DateSerializerMixin._is_date_field(str))
+        self.assertFalse(DateSerializerMixin._is_date_field(int))
+        self.assertFalse(DateSerializerMixin._is_date_field(str | None))
+
+    def test_test_optional_date_with_model(self) -> None:
+        """Test that optional date fields are properly detected and handled."""
+
+        class OptionalEvent(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            event_date: date | None = None
+            other_date: date | None
+
+        # Test with explicit None
+        event1 = OptionalEvent(name="Test", event_date=None, other_date=None)
+        self.assertIsNone(event1.event_date)
+        self.assertIsNone(event1.other_date)
+
+        # Test with date values
+        event2 = OptionalEvent(
+            name="Test",
+            event_date="2024-01-15",  # type: ignore[arg-type]
+            other_date="2024-02-20",  # type: ignore[arg-type]
+        )
+        self.assertEqual(event2.event_date, date(2024, 1, 15))
+        self.assertEqual(event2.other_date, date(2024, 2, 20))

@@ -195,7 +195,7 @@ class DateSerializerMixin:
         if origin in (type(date | None), type(None)):
             args = get_args(annotation)
             return date in args or any(
-                arg is date for arg in args if arg is not type(None)
+                arg is date for arg in args if arg is not type(None)  # pylint: disable=unidiomatic-typecheck
             )
         return False
 

@@ -26,8 +26,8 @@ A collection of extensions and enhancements for the Pydantic library, providing 
 
 ## Requirements
 
-- **Python**: 3.10, 3.11, 3.12, 3.13
-- **Pydantic**: >= 2.0
+- **Python**: 3.10, 3.11, 3.12, 3.13, 3.14
+- **Pydantic**: >= 2.0 (tested with 2.0 through 2.12)
 
 ## Installation
 
@@ -356,6 +356,9 @@ pytest src
 
 # Run with specific Pydantic version
 tox -e py313-pydantic211
+
+# Run with Python 3.14 and Pydantic 2.12
+tox -e py314-pydantic212
 
 # Run linters
 tox -e linters

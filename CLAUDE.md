@@ -82,7 +82,8 @@ tox -e linters     # Run all linters together
 ### Run Tests with Multiple Pydantic Versions
 ```bash
 tox -e py313-pydantic211    # Test against specific Python/Pydantic version
-tox                         # Run full test matrix (all Python 3.10-3.13, Pydantic 2.0-2.11)
+tox -e py314-pydantic212    # Test against Python 3.14 with Pydantic 2.12
+tox                         # Run full test matrix (all Python 3.10-3.14, Pydantic 2.0-2.12)
 ```
 
 ### Coverage
@@ -100,8 +101,8 @@ python -m build            # Build distribution files
 
 ### Pydantic Version Support
 - Minimum required: Pydantic >= 2.0
-- Tested against: Pydantic 2.0.1 through 2.11.0 (via tox matrix)
-- Python versions: 3.10, 3.11, 3.12, 3.13
+- Tested against: Pydantic 2.0 through 2.12 (via tox matrix)
+- Python versions: 3.10, 3.11, 3.12, 3.13, 3.14
 
 ### Test Coverage
 - **Requirement**: 100% code coverage is enforced (see tox.ini `py313-cov` environment)
