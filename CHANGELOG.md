@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-11-05
+
 ### Added
 
 - **DateFormat class**: Lightweight wrapper for date format specifications
@@ -18,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - `DMY_FORMAT`: European format (DD/MM/YYYY)
   - `MDY_FORMAT`: American format (MM/DD/YYYY)
   - `NUMBER_FORMAT`: Numeric format (YYYYMMDD)
+- **Python 3.14 and Pydantic 2.12 support** with comprehensive edge case coverage
+- **Per-field date format annotations** with Annotated support
 - Enhanced README.md with comprehensive examples and use cases
   - Added section on using predefined format constants
   - Added section on creating custom date formats
@@ -31,6 +35,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - `__date_format__` ClassVar now accepts both string and DateFormat objects
 - GitHub Actions workflow improvements for better CI/CD coverage
+- Fixed gh-actions tox mapping to use specific Pydantic version combinations
 
 ### Security
 
