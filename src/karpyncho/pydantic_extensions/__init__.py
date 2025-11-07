@@ -192,6 +192,9 @@ class DateSerializerMixin:
         if annotation is date or annotation == date | None:
             return True
         origin = get_origin(annotation)
+        if origin is Annotated:
+            args = get_args(annotation)
+            return date in args
         if origin in (type(date | None), type(None)):
             args = get_args(annotation)
             return date in args or any(
