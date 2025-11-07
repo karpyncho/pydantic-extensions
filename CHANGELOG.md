@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.3.2] - 2025-11-07
+
+### Added
+
+- Support for `Annotated` date fields in DateSerializerMixin
+  - Date fields wrapped in Pydantic's `Annotated` type hint are now properly detected and formatted
+  - Enables use of annotated date fields with custom metadata
+
 ## [0.3.1] - 2025-11-05
 
 ### Changed
