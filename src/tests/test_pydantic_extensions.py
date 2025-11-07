@@ -664,3 +664,9 @@ class EdgeCaseCoverageTest(TestCase):
         )
         self.assertEqual(event2.event_date, date(2024, 1, 15))
         self.assertEqual(event2.other_date, date(2024, 2, 20))
+
+    def test_is_date_field_with_annotated(self) -> None:
+        """Test _is_date_field method with Annotated types."""
+        # Test with Annotated[date, format]
+        annotation = Annotated[date, DMY_FORMAT]
+        self.assertTrue(DateSerializerMixin._is_date_field(annotation))
