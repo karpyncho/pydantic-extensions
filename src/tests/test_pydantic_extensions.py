@@ -676,6 +676,11 @@ class EdgeCaseCoverageTest(TestCase):
         annotation = Optional[Annotated[date, DMY_FORMAT]]
         self.assertTrue(DateSerializerMixin._is_date_field(annotation))
 
+
+    def test_is_date_field_optional_date_2(self) -> None:
+        annotation = date | None
+        self.assertTrue(DateSerializerMixin._is_date_field(annotation))
+
     def test_is_date_field_with_optional_annotated(self) -> None:
         """Test _is_date_field method with Optional[Annotated[date, format]]."""
         # Test with Optional[Annotated[date, format]]

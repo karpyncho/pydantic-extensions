@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.3.4] - 2025-11-10
+
+### Fixed
+
+- Fixed type detection for Union types to reach 100% code coverage
+  - Improved handling of Union type annotations in date field detection
+  - Enhanced type annotation processing for better robustness
+
 ## [0.3.3] - 2025-11-10
 
 ### Fixed
