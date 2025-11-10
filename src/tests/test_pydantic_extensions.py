@@ -32,6 +32,12 @@ class MyDataDMYClass(DateDMYSerializerMixin, BaseModel):
     date_field: date
 
 
+class MyDataDMYClassOptionalSecondFormatDate(DateDMYSerializerMixin, BaseModel):
+    str_field: str
+    date_field: date
+    optional_date_field: Optional[Annotated[date, ISO_FORMAT]] = None
+
+
 class MyDataNumberClass(DateNumberSerializerMixin, BaseModel):
     str_field: str
     date_field: date
@@ -104,6 +110,19 @@ class DateDMYSerializerMixinTest(TestCase):
         my_dict = json.loads(json_raw)
         obj = MyDataDMYClass(**my_dict)
         self.assertEqual(obj.date_field, date(2019, 5, 23))
+
+
+    def test_date_dmy_serializer_mixin_serialize_none(self) -> None:
+        data = MyDataDMYClassOptionalSecondFormatDate(str_field="Hello", date_field=date(2023, 1, 3))  # type: ignore[arg-type]
+        self.assertEqual(
+            data.model_dump(), {"str_field": "Hello", "date_field": "03/01/2023", "optional_date_field": None}
+        )
+
+    def test_date_dmy_serializer_mixin_serialize_value(self) -> None:
+        data = MyDataDMYClassOptionalSecondFormatDate(str_field="Hello", date_field=date(2023, 1, 3), optional_date_field=date(2024, 5, 8))  # type: ignore[arg-type]
+        self.assertEqual(
+            data.model_dump(), {"str_field": "Hello", "date_field": "03/01/2023", "optional_date_field": "2024-05-08"}
+        )
 
     def test_date_dmy_serializer_mixin_deserialize_one_digit_month(self) -> None:
         json_raw = '{"str_field": "hello", "date_field": "3/5/2019"}'

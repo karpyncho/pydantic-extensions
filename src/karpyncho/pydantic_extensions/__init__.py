@@ -181,11 +181,35 @@ class DateSerializerMixin:
     @classmethod
     def _get_date_format_from_metadata(cls, field_info, default_format):
         """Extract format from field metadata, return default if not found."""
-        if not field_info.metadata:
-            return default_format
-        for metadata in field_info.metadata:
-            if isinstance(metadata, DateFormat):
-                return str(metadata)
+        # First check if metadata is in field_info directly
+        if field_info.metadata:
+            for metadata in field_info.metadata:
+                if isinstance(metadata, DateFormat):
+                    return str(metadata)
+
+        # If not found, check within Annotated types
+        annotation = field_info.annotation
+        origin = get_origin(annotation)
+
+        # Handle Optional[Annotated[date, format]] or date | None | Annotated[date, format]
+        if origin is Union or isinstance(annotation, UnionType):
+            args = get_args(annotation)
+            for arg in args:
+                arg_origin = get_origin(arg)
+                if arg_origin is Annotated:
+                    arg_args = get_args(arg)
+                    # Look for DateFormat in metadata (args after the first one)
+                    for metadata in arg_args[1:]:
+                        if isinstance(metadata, DateFormat):
+                            return str(metadata)
+
+        # Handle Annotated[date | None, format] or Annotated[date, format]
+        if origin is Annotated:
+            args = get_args(annotation)
+            for metadata in args[1:]:
+                if isinstance(metadata, DateFormat):
+                    return str(metadata)
+
         return default_format
 
     @classmethod
