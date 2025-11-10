@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.3.3] - 2025-11-10
+
+### Fixed
+
+- Fixed detection of optional Annotated date fields (`Annotated[date | None, format]`)
+  - Now correctly identifies and formats fields with optional union annotations
+  - Properly supports per-field format annotations with optional types
+
 ## [0.3.2] - 2025-11-07
 
 ### Added
