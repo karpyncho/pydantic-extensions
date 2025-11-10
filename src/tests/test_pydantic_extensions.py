@@ -124,6 +124,20 @@ class DateDMYSerializerMixinTest(TestCase):
             data.model_dump(), {"str_field": "Hello", "date_field": "03/01/2023", "optional_date_field": "2024-05-08"}
         )
 
+    def test_date_dmy_serializer_mixin_deserialize_none(self) -> None:
+        json_raw = '{"str_field": "hello", "date_field": "23/05/2019", "optional_date_field": ""}'
+        my_dict = json.loads(json_raw)
+        obj = MyDataDMYClassOptionalSecondFormatDate(**my_dict)
+        self.assertEqual(obj.date_field, date(2019, 5, 23))
+        self.assertIsNone(obj.optional_date_field)
+
+    def test_date_dmy_serializer_mixin_deserialize_value(self) -> None:
+        json_raw = '{"str_field": "hello", "date_field": "23/05/2019", "optional_date_field": "2025-05-08"}'
+        my_dict = json.loads(json_raw)
+        obj = MyDataDMYClassOptionalSecondFormatDate(**my_dict)
+        self.assertEqual(obj.date_field, date(2019, 5, 23))
+        self.assertEqual(obj.optional_date_field, date(2025, 5, 8))
+
     def test_date_dmy_serializer_mixin_deserialize_one_digit_month(self) -> None:
         json_raw = '{"str_field": "hello", "date_field": "3/5/2019"}'
         my_dict = json.loads(json_raw)
@@ -808,3 +822,25 @@ class EdgeCaseCoverageTest(TestCase):
             transaction_date=20231225  # type: ignore[arg-type]
         )
         self.assertIsNone(trans_no_approval.approval_date)
+
+    def test_get_date_format_from_metadata_with_annotated_annotation(self) -> None:
+        """Test _get_date_format_from_metadata with Annotated annotation directly in FieldInfo."""
+        from pydantic.fields import FieldInfo
+
+        # Test case: FieldInfo with Annotated[date, format] annotation
+        # This covers the code path on lines 207-211 that handles
+        # Annotated[date | None, format] or Annotated[date, format]
+        field_info = FieldInfo(annotation=Annotated[date, DMY_FORMAT], default=None)  # type: ignore[arg-type]
+        result = DateSerializerMixin._get_date_format_from_metadata(
+            field_info, ISO_FORMAT
+        )
+        self.assertEqual(result, "%d/%m/%Y")
+
+        # Test with ISO_FORMAT
+        field_info_iso = FieldInfo(
+            annotation=Annotated[date, ISO_FORMAT], default=None  # type: ignore[arg-type]
+        )
+        result_iso = DateSerializerMixin._get_date_format_from_metadata(
+            field_info_iso, DMY_FORMAT
+        )
+        self.assertEqual(result_iso, "%Y-%m-%d")

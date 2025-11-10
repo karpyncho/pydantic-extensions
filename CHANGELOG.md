@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.3.5] - 2025-11-10
+
+### Fixed
+
+- Fixed annotation priority in date format detection
+  - Improved handling of format detection when multiple annotation sources are present
+  - Ensures correct prioritization of field-level Annotated formats over class-level formats
+
 ## [0.3.4] - 2025-11-10
 
 ### Fixed
