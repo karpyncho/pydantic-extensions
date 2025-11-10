@@ -1,7 +1,7 @@
 import json
 
 from datetime import date
-from typing import Annotated
+from typing import Annotated, Optional
 from unittest import TestCase
 
 from pydantic import BaseModel
@@ -669,6 +669,11 @@ class EdgeCaseCoverageTest(TestCase):
         """Test _is_date_field method with Annotated types."""
         # Test with Annotated[date, format]
         annotation = Annotated[date, DMY_FORMAT]
+        self.assertTrue(DateSerializerMixin._is_date_field(annotation))
+
+
+    def test_is_date_field_optional_date(self) -> None:
+        annotation = Optional[Annotated[date, DMY_FORMAT]]
         self.assertTrue(DateSerializerMixin._is_date_field(annotation))
 
     def test_is_date_field_with_optional_annotated(self) -> None:

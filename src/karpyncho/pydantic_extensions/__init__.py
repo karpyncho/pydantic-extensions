@@ -189,7 +189,7 @@ class DateSerializerMixin:
         return default_format
 
     @classmethod
-    def _is_date_field(cls, annotation):
+    def _is_date_field(cls, annotation):  # pylint: disable=too-many-return-statements
         """
         Check if annotation represents a date field.
 
@@ -202,7 +202,7 @@ class DateSerializerMixin:
         - Optional[Annotated[date, metadata]]
         """
         # Direct date type checks
-        if annotation is date or annotation == date | None:
+        if annotation is date:
             return True
 
         origin = get_origin(annotation)
@@ -230,7 +230,17 @@ class DateSerializerMixin:
         # Case: date | None (Union type directly, including UnionType from | operator)
         if origin is Union or isinstance(annotation, UnionType):
             args = get_args(annotation)
-            return date in args or any(arg is date for arg in args)
+            # Check for date directly
+            if date in args or any(arg is date for arg in args):
+                return True
+            # Check if any arg in the union is Annotated[date, ...] or Annotated[date | None, ...]
+            for arg in args:
+                arg_origin = get_origin(arg)
+                if arg_origin is Annotated:
+                    arg_args = get_args(arg)
+                    if arg_args and (arg_args[0] is date or cls._is_date_field(arg_args[0])):
+                        return True
+            return False
 
         return False
 
