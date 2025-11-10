@@ -27,10 +27,12 @@ Example:
 """
 from datetime import date
 from datetime import datetime
+from types import UnionType
 from typing import Annotated
 from typing import Any
 from typing import ClassVar
 from typing import Protocol
+from typing import Union
 from typing import cast
 from typing import get_args
 from typing import get_origin
@@ -188,18 +190,48 @@ class DateSerializerMixin:
 
     @classmethod
     def _is_date_field(cls, annotation):
-        """Check if annotation represents a date field."""
+        """
+        Check if annotation represents a date field.
+
+        Supports the following patterns:
+        - date
+        - date | None
+        - Optional[date]
+        - Annotated[date, metadata]
+        - Annotated[date | None, metadata]
+        - Optional[Annotated[date, metadata]]
+        """
+        # Direct date type checks
         if annotation is date or annotation == date | None:
             return True
+
         origin = get_origin(annotation)
+
+        # Case: Annotated[actual_type, metadata]
         if origin is Annotated:
             args = get_args(annotation)
-            return date in args
-        if origin in (type(date | None), type(None)):
+            # The first argument is the actual type, rest are metadata
+            actual_type = args[0]
+
+            # Check if actual_type is directly date
+            if actual_type is date:
+                return True
+
+            # Check if actual_type is a Union (e.g., date | None)
+            # Note: Both typing.Union and types.UnionType (from | operator) need to be checked
+            actual_origin = get_origin(actual_type)
+            if actual_origin is Union or isinstance(actual_type, UnionType):
+                union_args = get_args(actual_type)
+                # Check if date is in the union args
+                return date in union_args or any(arg is date for arg in union_args)
+
+            return False
+
+        # Case: date | None (Union type directly, including UnionType from | operator)
+        if origin is Union or isinstance(annotation, UnionType):
             args = get_args(annotation)
-            return date in args or any(
-                arg is date for arg in args if arg is not type(None)  # pylint: disable=unidiomatic-typecheck
-            )
+            return date in args or any(arg is date for arg in args)
+
         return False
 
     @classmethod

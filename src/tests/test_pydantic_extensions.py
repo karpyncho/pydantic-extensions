@@ -45,44 +45,44 @@ class MyDataNumberOptionalClass(DateNumberSerializerMixin, BaseModel):
 
 class DateSerializerMixinTest(TestCase):
     def test_date_serializer_mixin_serialize(self) -> None:
-        data = MyDataClass(str_field="Hola", date_field=date(2023, 1, 3))  # type: ignore[arg-type]
+        data = MyDataClass(str_field="Hello", date_field=date(2023, 1, 3))  # type: ignore[arg-type]
         self.assertEqual(
-            data.model_dump(), {"str_field": "Hola", "date_field": "2023-01-03"}
+            data.model_dump(), {"str_field": "Hello", "date_field": "2023-01-03"}
         )
 
     def test_date_serializer_mixin_deserialize(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "2019-05-23"}'
+        json_raw = '{"str_field": "hello", "date_field": "2019-05-23"}'
         my_dict = json.loads(json_raw)
         obj = MyDataClass(**my_dict)
         self.assertEqual(obj.date_field, date(2019, 5, 23))
 
     def test_date_serializer_mixin_deserialize_value_error(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "THIS IS NOT A DATE"}'
+        json_raw = '{"str_field": "hello", "date_field": "THIS IS NOT A DATE"}'
         my_dict = json.loads(json_raw)
         with self.assertRaises(ValueError):
             MyDataClass(**my_dict)
 
     def test_date_dmy_serializer_mixin_deserialize_one_digit_month(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "2019-5-3"}'
+        json_raw = '{"str_field": "hello", "date_field": "2019-5-3"}'
         my_dict = json.loads(json_raw)
         obj = MyDataClass(**my_dict)
         self.assertEqual(obj.date_field, date(2019, 5, 3))
 
     def test_date_dmy_serializer_mixin_deserialize_0_digit_day(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "2019-5-03"}'
+        json_raw = '{"str_field": "hello", "date_field": "2019-5-03"}'
         my_dict = json.loads(json_raw)
         obj = MyDataClass(**my_dict)
         self.assertEqual(obj.date_field, date(2019, 5, 3))
 
     def test_date_dmy_serializer_mixin_deserialize_two_digit_year(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "19-05-03"}'
+        json_raw = '{"str_field": "hello", "date_field": "19-05-03"}'
         my_dict = json.loads(json_raw)
         with self.assertRaises(ValueError):
             MyDataClass(**my_dict)
 
     def test_date_serializer_mixin_deserialize_optional_empty(self) -> None:
         json_raw = """{
-            "str_field": "hola",
+            "str_field": "hello",
             "date_field": "2019-5-03",
             "optional_date_field": ""
         }"""
@@ -94,37 +94,37 @@ class DateSerializerMixinTest(TestCase):
 
 class DateDMYSerializerMixinTest(TestCase):
     def test_date_dmy_serializer_mixin_serialize(self) -> None:
-        data = MyDataDMYClass(str_field="Hola", date_field=date(2023, 1, 3))  # type: ignore[arg-type]
+        data = MyDataDMYClass(str_field="Hello", date_field=date(2023, 1, 3))  # type: ignore[arg-type]
         self.assertEqual(
-            data.model_dump(), {"str_field": "Hola", "date_field": "03/01/2023"}
+            data.model_dump(), {"str_field": "Hello", "date_field": "03/01/2023"}
         )
 
     def test_date_dmy_serializer_mixin_deserialize(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "23/05/2019"}'
+        json_raw = '{"str_field": "hello", "date_field": "23/05/2019"}'
         my_dict = json.loads(json_raw)
         obj = MyDataDMYClass(**my_dict)
         self.assertEqual(obj.date_field, date(2019, 5, 23))
 
     def test_date_dmy_serializer_mixin_deserialize_one_digit_month(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "3/5/2019"}'
+        json_raw = '{"str_field": "hello", "date_field": "3/5/2019"}'
         my_dict = json.loads(json_raw)
         obj = MyDataDMYClass(**my_dict)
         self.assertEqual(obj.date_field, date(2019, 5, 3))
 
     def test_date_dmy_serializer_mixin_deserialize_0_padded_day(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "03/5/2019"}'
+        json_raw = '{"str_field": "hello", "date_field": "03/5/2019"}'
         my_dict = json.loads(json_raw)
         obj = MyDataDMYClass(**my_dict)
         self.assertEqual(obj.date_field, date(2019, 5, 3))
 
     def test_date_dmy_serializer_mixin_deserialize_two_digit_year(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "03/5/19"}'
+        json_raw = '{"str_field": "hello", "date_field": "03/5/19"}'
         my_dict = json.loads(json_raw)
         with self.assertRaises(ValueError):
             MyDataDMYClass(**my_dict)
 
     def test_date_dmy_serializer_mixin_deserialize_value_error(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "THIS IS NOT A DATE"}'
+        json_raw = '{"str_field": "hello", "date_field": "THIS IS NOT A DATE"}'
         my_dict = json.loads(json_raw)
 
         with self.assertRaises(ValueError):
@@ -134,31 +134,31 @@ class DateDMYSerializerMixinTest(TestCase):
 class DateNumberSerializerMixinTest(TestCase):
 
     def test_date_number_serializer_mixin_serialize(self) -> None:
-        data = MyDataNumberClass(str_field="Hola", date_field=date(2023, 1, 3))  # type: ignore[arg-type]
+        data = MyDataNumberClass(str_field="Hello", date_field=date(2023, 1, 3))  # type: ignore[arg-type]
         self.assertEqual(
-            data.model_dump(), {"str_field": "Hola", "date_field": 20230103}
+            data.model_dump(), {"str_field": "Hello", "date_field": 20230103}
         )
 
     def test_date_number_serializer_mixin_deserialize(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": 20190523}'
+        json_raw = '{"str_field": "hello", "date_field": 20190523}'
         my_dict = json.loads(json_raw)
         obj = MyDataNumberClass(**my_dict)
         self.assertEqual(obj.date_field, date(2019, 5, 23))
 
     def test_date_number_serializer_mixin_deserialize_one_digit_month(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": 20190503}'
+        json_raw = '{"str_field": "hello", "date_field": 20190503}'
         my_dict = json.loads(json_raw)
         obj = MyDataNumberClass(**my_dict)
         self.assertEqual(obj.date_field, date(2019, 5, 3))
 
     def test_date_number_serializer_mixin_deserialize_two_digit_year(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": 1905003}'
+        json_raw = '{"str_field": "hello", "date_field": 1905003}'
         my_dict = json.loads(json_raw)
         with self.assertRaises(ValueError):
             MyDataNumberClass(**my_dict)
 
     def test_date_number_serializer_mixin_deserialize_value_error(self) -> None:
-        json_raw = '{"str_field": "hola", "date_field": "THIS IS NOT A DATE"}'
+        json_raw = '{"str_field": "hello", "date_field": "THIS IS NOT A DATE"}'
         my_dict = json.loads(json_raw)
 
         with self.assertRaises(ValueError):
@@ -167,7 +167,7 @@ class DateNumberSerializerMixinTest(TestCase):
     def test_date_number_serializer_mixin_deserialize_optional_empty(self) -> None:
         json_raw = """
         {
-            "str_field": "hola",
+            "str_field": "hello",
             "date_field": 20190503,
             "optional_date_field": 0
         }
@@ -670,3 +670,112 @@ class EdgeCaseCoverageTest(TestCase):
         # Test with Annotated[date, format]
         annotation = Annotated[date, DMY_FORMAT]
         self.assertTrue(DateSerializerMixin._is_date_field(annotation))
+
+    def test_is_date_field_with_optional_annotated(self) -> None:
+        """Test _is_date_field method with Optional[Annotated[date, format]]."""
+        # Test with Optional[Annotated[date, format]]
+        # This is the core case from the issue
+        annotation = Annotated[date | None, ISO_FORMAT]
+        self.assertTrue(DateSerializerMixin._is_date_field(annotation))
+
+    def test_is_date_field_with_non_date_annotated(self) -> None:
+        """Test _is_date_field method with Annotated non-date types."""
+        # Test with Annotated[str, metadata] - should return False
+        annotation = Annotated[str, ISO_FORMAT]
+        self.assertFalse(DateSerializerMixin._is_date_field(annotation))
+
+        # Test with Annotated[int, metadata] - should return False
+        annotation_int = Annotated[int, "some metadata"]
+        self.assertFalse(DateSerializerMixin._is_date_field(annotation_int))
+
+    def test_optional_annotated_field_with_format(self) -> None:
+        """Test that Optional[Annotated[date, format]] fields are properly detected and formatted."""
+
+        class PersonData(DateSerializerMixin, BaseModel):
+            """Model similar to the one mentioned in the issue."""
+            __date_format__ = ISO_FORMAT
+            name: str
+            death_date: Annotated[date | None, ISO_FORMAT] = None
+
+        # Test with date value
+        data = PersonData(
+            name="John",
+            death_date="2023-05-15"  # type: ignore[arg-type]
+        )
+        self.assertEqual(data.death_date, date(2023, 5, 15))
+        self.assertEqual(
+            data.model_dump(),
+            {"name": "John", "death_date": "2023-05-15"}
+        )
+
+        # Test with None value
+        data_no_date = PersonData(name="Charles")
+        self.assertIsNone(data_no_date.death_date)
+        self.assertEqual(
+            data_no_date.model_dump(),
+            {"name": "Charles", "death_date": None}
+        )
+
+    def test_optional_annotated_field_json_deserialization(self) -> None:
+        """Test JSON deserialization with Optional[Annotated[date, format]]."""
+
+        class PersonData(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            death_date: Annotated[date | None, ISO_FORMAT] = None
+
+        # Test with JSON containing date
+        json_raw = '{"name": "Mary", "death_date": "2024-03-20"}'
+        my_dict = json.loads(json_raw)
+        data = PersonData(**my_dict)
+        self.assertEqual(data.death_date, date(2024, 3, 20))
+
+        # Test with field omitted (should default to None)
+        json_raw_omitted = '{"name": "Peter"}'
+        my_dict_omitted = json.loads(json_raw_omitted)
+        data_omitted = PersonData(**my_dict_omitted)
+        self.assertIsNone(data_omitted.death_date)
+
+    def test_optional_annotated_dmy_format(self) -> None:
+        """Test Optional[Annotated[date, DMY_FORMAT]] with different format than default."""
+
+        class DateEvent(DateSerializerMixin, BaseModel):
+            __date_format__ = ISO_FORMAT
+            name: str
+            event_date: Annotated[date | None, DMY_FORMAT] = None
+
+        # Test with DMY format
+        event = DateEvent(
+            name="Event",
+            event_date="15/05/2023"  # type: ignore[arg-type]
+        )
+        self.assertEqual(event.event_date, date(2023, 5, 15))
+        self.assertEqual(
+            event.model_dump(),
+            {"name": "Event", "event_date": "15/05/2023"}
+        )
+
+    def test_optional_annotated_number_format(self) -> None:
+        """Test Optional[Annotated[date, ...]] with NumberSerializerMixin."""
+
+        class TransactionWithOptional(DateNumberSerializerMixin, BaseModel):
+            transaction_id: str
+            transaction_date: date
+            approval_date: Annotated[date | None, NUMBER_FORMAT] = None
+
+        # Test with numeric date
+        trans = TransactionWithOptional(
+            transaction_id="TXN001",
+            transaction_date=20231225,  # type: ignore[arg-type]
+            approval_date=20231226  # type: ignore[arg-type]
+        )
+        self.assertEqual(trans.approval_date, date(2023, 12, 26))
+        dumped = trans.model_dump()
+        self.assertEqual(dumped["approval_date"], 20231226)
+
+        # Test with None
+        trans_no_approval = TransactionWithOptional(
+            transaction_id="TXN002",
+            transaction_date=20231225  # type: ignore[arg-type]
+        )
+        self.assertIsNone(trans_no_approval.approval_date)
